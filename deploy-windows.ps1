@@ -1,261 +1,190 @@
-﻿# ============================================================
-# Lead Key -- automated deploy script for Windows Server / Windows 10+
-# Usage: Run PowerShell as Administrator, then:
-#   Set-ExecutionPolicy Bypass -Scope Process
-#   .\deploy-windows.ps1
-# ============================================================
+﻿# Lead Key - deploy script for Windows
+# Run as Administrator: Set-ExecutionPolicy Bypass -Scope Process; .\deploy-windows.ps1
 
 #Requires -RunAsAdministrator
 
-# --- Config (edit before running) ---
-$APP_NAME = "led-key"
-$REPO_URL = "https://github.com/rasuliyonn/led-key.git"
-$DOMAIN = "lead-key.ru"
-$APP_DIR = "C:\Apps\$APP_NAME"
-$APP_PORT = 3000
-$NODE_VERSION = "22"
+$APP_NAME = 'led-key'
+$REPO_URL = 'https://github.com/rasuliyonn/led-key.git'
+$DOMAIN = 'lead-key.ru'
+$APP_DIR = 'C:\Apps\led-key'
+$APP_PORT = 6654
+$NODE_VERSION = 22
 
-# Admin credentials (CHANGE THESE!)
-$ADMIN_USER = "admin"
-$ADMIN_PASS = "admin123"
+$ADMIN_USER = 'admin'
+$ADMIN_PASS = 'admin123'
 
-# --- Helper functions ---
-function Log($msg) { Write-Host "[+] $msg" -ForegroundColor Green }
-function Warn($msg) { Write-Host "[!] $msg" -ForegroundColor Yellow }
-function Err($msg) { Write-Host "[X] $msg" -ForegroundColor Red; exit 1 }
+function Log($msg) { Write-Host "[OK] $msg" -ForegroundColor Green }
+function Warn($msg) { Write-Host "[!!] $msg" -ForegroundColor Yellow }
 
-Write-Host ""
-Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "  Lead Key -- Windows Deploy"
-Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host ""
+Write-Host ''
+Write-Host '========================================='
+Write-Host '  Lead Key - Windows Deploy'
+Write-Host '========================================='
+Write-Host ''
 
-# --- 1. Install Chocolatey (package manager) ---
-if (!(Get-Command choco -ErrorAction SilentlyContinue)) {
-    Log "Installing Chocolatey..."
+# 1. Chocolatey
+if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+    Log 'Installing Chocolatey...'
     Set-ExecutionPolicy Bypass -Scope Process -Force
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-    $env:Path = "$env:Path;C:\ProgramData\chocolatey\bin"
+    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    $env:Path = $env:Path + ';C:\ProgramData\chocolatey\bin'
 } else {
-    Log "Chocolatey already installed"
+    Log 'Chocolatey OK'
 }
 
-# --- 2. Install Git ---
-if (!(Get-Command git -ErrorAction SilentlyContinue)) {
-    Log "Installing Git..."
+# 2. Git
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    Log 'Installing Git...'
     choco install git -y --no-progress
-    $env:Path = "$env:Path;C:\Program Files\Git\bin"
+    $env:Path = $env:Path + ';C:\Program Files\Git\bin'
 } else {
-    Log "Git already installed: $(git --version)"
+    Log 'Git OK'
 }
 
-# --- 3. Install Node.js ---
-if (!(Get-Command node -ErrorAction SilentlyContinue)) {
-    Log "Installing Node.js $NODE_VERSION..."
+# 3. Node.js
+if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+    Log 'Installing Node.js...'
     choco install nodejs-lts -y --no-progress
-    # Refresh PATH
-    $machinePath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
-    $userPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
-    $env:Path = "$machinePath;$userPath"
+    $mp = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $up = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path = $mp + ';' + $up
 } else {
-    $currentVersion = (node -v) -replace 'v','' -split '\.' | Select-Object -First 1
-    if ([int]$currentVersion -ge [int]$NODE_VERSION) {
-        Log "Node.js v$(node -v) already installed"
-    } else {
-        Log "Upgrading Node.js..."
-        choco upgrade nodejs-lts -y --no-progress
-    }
+    Log ('Node.js OK: ' + (node -v))
 }
 
-# --- 4. Install PM2 ---
-if (!(Get-Command pm2 -ErrorAction SilentlyContinue)) {
-    Log "Installing PM2..."
-    npm install -g pm2 pm2-windows-startup
+# 4. PM2
+if (-not (Get-Command pm2 -ErrorAction SilentlyContinue)) {
+    Log 'Installing PM2...'
+    npm install -g pm2
 } else {
-    Log "PM2 already installed"
+    Log 'PM2 OK'
 }
 
-# --- 5. Clone or pull repo ---
-if (Test-Path "$APP_DIR\.git") {
-    Log "Repo exists, pulling latest..."
+# 5. Clone or pull
+if (Test-Path (Join-Path $APP_DIR '.git')) {
+    Log 'Pulling latest...'
     Set-Location $APP_DIR
     git pull origin main
 } else {
-    Log "Cloning repository..."
-    if (!(Test-Path (Split-Path $APP_DIR))) {
-        New-Item -ItemType Directory -Path (Split-Path $APP_DIR) -Force | Out-Null
+    Log 'Cloning repo...'
+    $parent = Split-Path $APP_DIR
+    if (-not (Test-Path $parent)) {
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
     }
     git clone $REPO_URL $APP_DIR
     Set-Location $APP_DIR
 }
 
-# --- 6. Install dependencies ---
-Log "Installing npm dependencies..."
+# 6. npm install
+Log 'Installing dependencies...'
 Set-Location $APP_DIR
 npm install --production
 
-# --- 7. Create .env ---
-$envFile = Join-Path $APP_DIR ".env"
-
+# 7. Create .env
+$envFile = Join-Path $APP_DIR '.env'
 if (Test-Path $envFile) {
-    Warn ".env already exists -- skipping (delete manually to regenerate)"
+    Warn '.env exists - skipping'
 } else {
-    Log "Creating .env..."
-    # Generate random JWT secret
+    Log 'Creating .env...'
     $bytes = New-Object byte[] 32
     [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
-    $JWT_SECRET = [BitConverter]::ToString($bytes) -replace '-',''
-
-    $envContent = "PORT=$APP_PORT`nJWT_SECRET=$JWT_SECRET`nADMIN_USER=$ADMIN_USER`nADMIN_PASS=$ADMIN_PASS"
-    $envContent | Out-File -FilePath $envFile -Encoding UTF8 -NoNewline
-    Log ".env created with generated JWT_SECRET"
+    $secret = [BitConverter]::ToString($bytes) -replace '-',''
+    $lines = @(
+        ('PORT=' + $APP_PORT),
+        ('JWT_SECRET=' + $secret),
+        ('ADMIN_USER=' + $ADMIN_USER),
+        ('ADMIN_PASS=' + $ADMIN_PASS)
+    )
+    $lines -join "`n" | Set-Content -Path $envFile -Encoding UTF8 -NoNewline
+    Log '.env created'
 }
 
-# --- 8. Create upload dirs ---
-$dirs = @(
-    "$APP_DIR\public\uploads\images",
-    "$APP_DIR\public\uploads\videos",
-    "$APP_DIR\data"
+# 8. Directories
+$uploadDirs = @(
+    (Join-Path $APP_DIR 'public\uploads\images'),
+    (Join-Path $APP_DIR 'public\uploads\videos'),
+    (Join-Path $APP_DIR 'data')
 )
-foreach ($dir in $dirs) {
-    if (!(Test-Path $dir)) {
-        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+foreach ($d in $uploadDirs) {
+    if (-not (Test-Path $d)) {
+        New-Item -ItemType Directory -Path $d -Force | Out-Null
     }
 }
-Log "Upload directories created"
+Log 'Directories OK'
 
-# --- 9. PM2 setup ---
-Log "Starting app with PM2..."
+# 9. PM2 start
+Log 'Starting with PM2...'
+$serverJs = Join-Path $APP_DIR 'server.js'
 pm2 delete $APP_NAME 2>$null
-pm2 start "$APP_DIR\server.js" --name $APP_NAME
+pm2 start $serverJs --name $APP_NAME
 pm2 save
+Log 'PM2 running'
 
-# Setup PM2 to run on Windows startup
-Log "Configuring PM2 auto-start..."
-pm2-startup install 2>$null
-pm2 save
+# 10. Firewall
+Log 'Configuring firewall...'
+Remove-NetFirewallRule -DisplayName 'LeadKey HTTP' -ErrorAction SilentlyContinue
+Remove-NetFirewallRule -DisplayName 'LeadKey HTTPS' -ErrorAction SilentlyContinue
+Remove-NetFirewallRule -DisplayName 'LeadKey App' -ErrorAction SilentlyContinue
+New-NetFirewallRule -DisplayName 'LeadKey HTTP' -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow | Out-Null
+New-NetFirewallRule -DisplayName 'LeadKey HTTPS' -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow | Out-Null
+New-NetFirewallRule -DisplayName 'LeadKey App' -Direction Inbound -Protocol TCP -LocalPort $APP_PORT -Action Allow | Out-Null
+Log 'Firewall OK'
 
-# --- 10. Windows Firewall ---
-Log "Configuring Windows Firewall..."
-
-# Remove old rules if exist
-Remove-NetFirewallRule -DisplayName "Lead Key HTTP" -ErrorAction SilentlyContinue
-Remove-NetFirewallRule -DisplayName "Lead Key HTTPS" -ErrorAction SilentlyContinue
-Remove-NetFirewallRule -DisplayName "Lead Key Node" -ErrorAction SilentlyContinue
-
-# Add new rules
-New-NetFirewallRule -DisplayName "Lead Key HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow | Out-Null
-New-NetFirewallRule -DisplayName "Lead Key HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow | Out-Null
-New-NetFirewallRule -DisplayName "Lead Key Node" -Direction Inbound -Protocol TCP -LocalPort $APP_PORT -Action Allow | Out-Null
-Log "Firewall rules added (80, 443, $APP_PORT)"
-
-# --- 11. Nginx (optional reverse proxy) ---
-$installNginx = Read-Host "Install Nginx as reverse proxy? (y/n)"
-
-if ($installNginx -eq 'y') {
-    Log "Installing Nginx..."
+# 11. Nginx
+$doNginx = Read-Host 'Install Nginx reverse proxy? (y/n)'
+if ($doNginx -eq 'y') {
+    Log 'Installing Nginx...'
     choco install nginx -y --no-progress
 
-    $nginxConf = "C:\tools\nginx\conf\nginx.conf"
-    if (!(Test-Path $nginxConf)) {
-        $nginxConf = "C:\ProgramData\chocolatey\lib\nginx\tools\nginx\conf\nginx.conf"
+    $nginxConf = 'C:\tools\nginx\conf\nginx.conf'
+    if (-not (Test-Path $nginxConf)) {
+        $nginxConf = 'C:\ProgramData\chocolatey\lib\nginx\tools\nginx\conf\nginx.conf'
     }
 
-    $nginxConfig = @"
-worker_processes 1;
+    $nl = "`n"
+    $cfg = 'worker_processes 1;' + $nl
+    $cfg += 'events { worker_connections 1024; }' + $nl
+    $cfg += 'http {' + $nl
+    $cfg += '    include mime.types;' + $nl
+    $cfg += '    default_type application/octet-stream;' + $nl
+    $cfg += '    sendfile on;' + $nl
+    $cfg += '    client_max_body_size 100M;' + $nl
+    $cfg += '    upstream nodejs { server 127.0.0.1:' + $APP_PORT + '; }' + $nl
+    $cfg += '    server {' + $nl
+    $cfg += '        listen 80;' + $nl
+    $cfg += '        server_name ' + $DOMAIN + ' www.' + $DOMAIN + ';' + $nl
+    $cfg += '        location / {' + $nl
+    $cfg += '            proxy_pass http://nodejs;' + $nl
+    $cfg += '            proxy_http_version 1.1;' + $nl
+    $cfg += '            proxy_set_header Host $host;' + $nl
+    $cfg += '            proxy_set_header X-Real-IP $remote_addr;' + $nl
+    $cfg += '            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' + $nl
+    $cfg += '            proxy_set_header X-Forwarded-Proto $scheme;' + $nl
+    $cfg += '        }' + $nl
+    $cfg += '    }' + $nl
+    $cfg += '}' + $nl
 
-events {
-    worker_connections 1024;
-}
+    $cfg | Set-Content -Path $nginxConf -Encoding UTF8
+    Log 'Nginx configured'
 
-http {
-    include       mime.types;
-    default_type  application/octet-stream;
-    sendfile      on;
-    client_max_body_size 100M;
-
-    upstream nodejs {
-        server 127.0.0.1:$APP_PORT;
-    }
-
-    server {
-        listen 80;
-        server_name $DOMAIN www.$DOMAIN;
-
-        location / {
-            proxy_pass http://nodejs;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade `$http_upgrade;
-            proxy_set_header Connection 'upgrade';
-            proxy_set_header Host `$host;
-            proxy_set_header X-Real-IP `$remote_addr;
-            proxy_set_header X-Forwarded-For `$proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto `$scheme;
-            proxy_cache_bypass `$http_upgrade;
-        }
-    }
-}
-"@
-    $nginxConfig | Out-File -FilePath $nginxConf -Encoding UTF8
-    Log "Nginx configured"
-
-    # Start nginx
-    Start-Process -FilePath "nginx" -WorkingDirectory (Split-Path $nginxConf) -WindowStyle Hidden
-    Log "Nginx started"
-
-    Warn "For SSL on Windows, use win-acme (wacs.exe):"
-    Warn "  choco install win-acme -y"
-    Warn "  wacs.exe --target manual --host $DOMAIN,www.$DOMAIN --installation nginx"
+    Start-Process -FilePath 'nginx' -WorkingDirectory (Split-Path $nginxConf) -WindowStyle Hidden
+    Log 'Nginx started'
+    Warn 'For SSL use win-acme: choco install win-acme -y'
 } else {
-    Warn "Skipping Nginx. App accessible directly at http://localhost:$APP_PORT"
+    Warn ('No Nginx. App at http://localhost:' + $APP_PORT)
 }
 
-# --- 12. Create Windows Service (alternative to PM2) ---
-$useService = Read-Host "Also install as Windows Service via NSSM? (y/n)"
-
-if ($useService -eq 'y') {
-    if (!(Get-Command nssm -ErrorAction SilentlyContinue)) {
-        choco install nssm -y --no-progress
-    }
-
-    # Remove existing service
-    nssm stop $APP_NAME 2>$null
-    nssm remove $APP_NAME confirm 2>$null
-
-    # Install service
-    $nodePath = (Get-Command node).Source
-    nssm install $APP_NAME $nodePath "$APP_DIR\server.js"
-    nssm set $APP_NAME AppDirectory $APP_DIR
-    nssm set $APP_NAME AppEnvironmentExtra "NODE_ENV=production"
-    nssm set $APP_NAME DisplayName "Lead Key Web App"
-    nssm set $APP_NAME Description "Lead Key landing page with admin panel"
-    nssm set $APP_NAME Start SERVICE_AUTO_START
-    nssm set $APP_NAME AppStdout "$APP_DIR\logs\service-stdout.log"
-    nssm set $APP_NAME AppStderr "$APP_DIR\logs\service-stderr.log"
-
-    New-Item -ItemType Directory -Path "$APP_DIR\logs" -Force | Out-Null
-    nssm start $APP_NAME
-
-    Log "Windows Service '$APP_NAME' installed and started"
-    Warn "If using NSSM service, you can stop PM2: pm2 delete $APP_NAME"
-}
-
-# --- Done ---
-Write-Host ""
-Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "  Deploy complete!" -ForegroundColor Green
-Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "  Site:   http://localhost:$APP_PORT"
-Write-Host "  Admin:  http://localhost:$APP_PORT/admin"
-Write-Host "  User:   $ADMIN_USER"
-Write-Host ""
-Write-Host "  Useful commands:" -ForegroundColor Gray
-Write-Host "    pm2 status          -- check app status"
-Write-Host "    pm2 logs $APP_NAME  -- view logs"
-Write-Host "    pm2 restart $APP_NAME -- restart app"
-Write-Host "    cd $APP_DIR         -- project directory"
-Write-Host ""
-Warn "CHANGE admin password after first login!"
-Write-Host ""
+# Done
+Write-Host ''
+Write-Host '========================================='
+Write-Host '  Deploy complete!' -ForegroundColor Green
+Write-Host '========================================='
+Write-Host ''
+Write-Host ('  Site:  http://localhost:' + $APP_PORT)
+Write-Host ('  Admin: http://localhost:' + $APP_PORT + '/admin')
+Write-Host ('  Login: ' + $ADMIN_USER)
+Write-Host ''
+Write-Host '  pm2 status / pm2 logs led-key / pm2 restart led-key'
+Write-Host ''
+Warn 'CHANGE admin password after first login!'

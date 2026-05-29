@@ -11,7 +11,7 @@ APP_NAME="led-key"
 REPO_URL="https://github.com/rasuliyonn/led-key.git"
 DOMAIN="lead-key.ru"                    # your domain
 APP_DIR="/var/www/$APP_NAME"
-APP_PORT=3000
+APP_PORT=6654
 NODE_MAJOR=22
 APP_USER="www-data"
 
