@@ -8,7 +8,6 @@ $REPO_URL = 'https://github.com/rasuliyonn/led-key.git'
 $DOMAIN = 'lead-key.ru'
 $APP_DIR = 'C:\Apps\led-key'
 $APP_PORT = 6654
-$NODE_VERSION = 22
 
 $ADMIN_USER = 'admin'
 $ADMIN_PASS = 'admin123'
@@ -42,7 +41,36 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Log 'Git OK'
 }
 
-# 3. Node.js
+# 3. Python (needed for native modules like better-sqlite3)
+if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
+    Log 'Installing Python 3...'
+    choco install python3 -y --no-progress
+    $mp = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $up = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path = $mp + ';' + $up
+} else {
+    Log ('Python OK: ' + (python --version))
+}
+
+# 4. Visual Studio Build Tools (C++ compiler for native npm modules)
+$vsWhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
+$hasBuildTools = $false
+if (Test-Path $vsWhere) {
+    $installed = & $vsWhere -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property productPath 2>$null
+    if ($installed) { $hasBuildTools = $true }
+}
+if (-not $hasBuildTools) {
+    Log 'Installing Visual Studio Build Tools (C++ workload)...'
+    Warn 'This may take 5-10 minutes...'
+    choco install visualstudio2022buildtools -y --no-progress --package-parameters '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --passive'
+    $mp = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $up = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path = $mp + ';' + $up
+} else {
+    Log 'VS Build Tools OK'
+}
+
+# 5. Node.js
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
     Log 'Installing Node.js...'
     choco install nodejs-lts -y --no-progress
@@ -53,7 +81,7 @@ if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
     Log ('Node.js OK: ' + (node -v))
 }
 
-# 4. PM2
+# 6. PM2
 if (-not (Get-Command pm2 -ErrorAction SilentlyContinue)) {
     Log 'Installing PM2...'
     npm install -g pm2
@@ -61,7 +89,7 @@ if (-not (Get-Command pm2 -ErrorAction SilentlyContinue)) {
     Log 'PM2 OK'
 }
 
-# 5. Clone or pull
+# 7. Clone or pull
 if (Test-Path (Join-Path $APP_DIR '.git')) {
     Log 'Pulling latest...'
     Set-Location $APP_DIR
@@ -76,15 +104,35 @@ if (Test-Path (Join-Path $APP_DIR '.git')) {
     Set-Location $APP_DIR
 }
 
-# 6. npm install
+# 8. npm install
 Log 'Installing dependencies...'
 Set-Location $APP_DIR
-npm install --production
+npm install --omit=dev
+if ($LASTEXITCODE -ne 0) {
+    Write-Host ''
+    Write-Host '[FAIL] npm install failed!' -ForegroundColor Red
+    Write-Host 'If better-sqlite3 fails to build:' -ForegroundColor Red
+    Write-Host '  1. Close PowerShell' -ForegroundColor Yellow
+    Write-Host '  2. Reboot the server (build tools need reboot)' -ForegroundColor Yellow
+    Write-Host '  3. Open PowerShell as Admin, run:' -ForegroundColor Yellow
+    Write-Host '     cd C:\Apps\led-key' -ForegroundColor Yellow
+    Write-Host '     npm install --omit=dev' -ForegroundColor Yellow
+    Write-Host '     pm2 start server.js --name led-key' -ForegroundColor Yellow
+    Write-Host ''
+    exit 1
+}
 
-# 7. Create .env
+# 9. Create .env
 $envFile = Join-Path $APP_DIR '.env'
 if (Test-Path $envFile) {
-    Warn '.env exists - skipping'
+    Warn '.env exists - checking port...'
+    $content = Get-Content $envFile -Raw
+    if ($content -notmatch ('PORT=' + $APP_PORT)) {
+        Warn ('Updating port to ' + $APP_PORT + '...')
+        $content = $content -replace 'PORT=\d+', ('PORT=' + $APP_PORT)
+        $content | Set-Content -Path $envFile -Encoding UTF8 -NoNewline
+        Log 'Port updated'
+    }
 } else {
     Log 'Creating .env...'
     $bytes = New-Object byte[] 32
@@ -100,7 +148,7 @@ if (Test-Path $envFile) {
     Log '.env created'
 }
 
-# 8. Directories
+# 10. Directories
 $uploadDirs = @(
     (Join-Path $APP_DIR 'public\uploads\images'),
     (Join-Path $APP_DIR 'public\uploads\videos'),
@@ -113,7 +161,7 @@ foreach ($d in $uploadDirs) {
 }
 Log 'Directories OK'
 
-# 9. PM2 start
+# 11. PM2 start
 Log 'Starting with PM2...'
 $serverJs = Join-Path $APP_DIR 'server.js'
 pm2 delete $APP_NAME 2>$null
@@ -121,7 +169,7 @@ pm2 start $serverJs --name $APP_NAME
 pm2 save
 Log 'PM2 running'
 
-# 10. Firewall
+# 12. Firewall
 Log 'Configuring firewall...'
 Remove-NetFirewallRule -DisplayName 'LeadKey HTTP' -ErrorAction SilentlyContinue
 Remove-NetFirewallRule -DisplayName 'LeadKey HTTPS' -ErrorAction SilentlyContinue
@@ -129,51 +177,7 @@ Remove-NetFirewallRule -DisplayName 'LeadKey App' -ErrorAction SilentlyContinue
 New-NetFirewallRule -DisplayName 'LeadKey HTTP' -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow | Out-Null
 New-NetFirewallRule -DisplayName 'LeadKey HTTPS' -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow | Out-Null
 New-NetFirewallRule -DisplayName 'LeadKey App' -Direction Inbound -Protocol TCP -LocalPort $APP_PORT -Action Allow | Out-Null
-Log 'Firewall OK'
-
-# 11. Nginx
-$doNginx = Read-Host 'Install Nginx reverse proxy? (y/n)'
-if ($doNginx -eq 'y') {
-    Log 'Installing Nginx...'
-    choco install nginx -y --no-progress
-
-    $nginxConf = 'C:\tools\nginx\conf\nginx.conf'
-    if (-not (Test-Path $nginxConf)) {
-        $nginxConf = 'C:\ProgramData\chocolatey\lib\nginx\tools\nginx\conf\nginx.conf'
-    }
-
-    $nl = "`n"
-    $cfg = 'worker_processes 1;' + $nl
-    $cfg += 'events { worker_connections 1024; }' + $nl
-    $cfg += 'http {' + $nl
-    $cfg += '    include mime.types;' + $nl
-    $cfg += '    default_type application/octet-stream;' + $nl
-    $cfg += '    sendfile on;' + $nl
-    $cfg += '    client_max_body_size 100M;' + $nl
-    $cfg += '    upstream nodejs { server 127.0.0.1:' + $APP_PORT + '; }' + $nl
-    $cfg += '    server {' + $nl
-    $cfg += '        listen 80;' + $nl
-    $cfg += '        server_name ' + $DOMAIN + ' www.' + $DOMAIN + ';' + $nl
-    $cfg += '        location / {' + $nl
-    $cfg += '            proxy_pass http://nodejs;' + $nl
-    $cfg += '            proxy_http_version 1.1;' + $nl
-    $cfg += '            proxy_set_header Host $host;' + $nl
-    $cfg += '            proxy_set_header X-Real-IP $remote_addr;' + $nl
-    $cfg += '            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' + $nl
-    $cfg += '            proxy_set_header X-Forwarded-Proto $scheme;' + $nl
-    $cfg += '        }' + $nl
-    $cfg += '    }' + $nl
-    $cfg += '}' + $nl
-
-    $cfg | Set-Content -Path $nginxConf -Encoding UTF8
-    Log 'Nginx configured'
-
-    Start-Process -FilePath 'nginx' -WorkingDirectory (Split-Path $nginxConf) -WindowStyle Hidden
-    Log 'Nginx started'
-    Warn 'For SSL use win-acme: choco install win-acme -y'
-} else {
-    Warn ('No Nginx. App at http://localhost:' + $APP_PORT)
-}
+Log ('Firewall OK (80, 443, ' + $APP_PORT + ')')
 
 # Done
 Write-Host ''
