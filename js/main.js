@@ -157,11 +157,16 @@
     });
   }
 
-  // Заглушка отправки заявки — здесь подключается реальный бэкенд.
+  // Отправка заявки на сервер
   function submitLead(data) {
-    // Например: return fetch('/api/lead', { method: 'POST', body: JSON.stringify(data) });
-    console.log('Заявка (демо, без бэкенда):', data);
-    return Promise.resolve();
+    return fetch('/api/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function(r) {
+      if (!r.ok) throw new Error('Submit failed');
+      return r.json();
+    });
   }
 
   document.querySelectorAll('.lead-form').forEach(function (form) {

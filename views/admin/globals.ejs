@@ -1,0 +1,24 @@
+<h1 class="admin-page-title">Глобальные настройки</h1>
+<form class="admin-form" id="globalsForm">
+  <% globals.forEach(function(g) { %>
+  <div class="admin-field">
+    <label><%= g.label || g.key %></label>
+    <% if (g.field_type === 'textarea') { %>
+    <textarea name="<%= g.key %>" rows="3"><%= g.value %></textarea>
+    <% } else { %>
+    <input type="text" name="<%= g.key %>" value="<%= g.value %>">
+    <% } %>
+  </div>
+  <% }); %>
+  <button type="submit" class="admin-btn">Сохранить</button>
+</form>
+
+<script>
+document.getElementById('globalsForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var data = {};
+  this.querySelectorAll('input, textarea').forEach(function(el) { data[el.name] = el.value; });
+  fetch('/api/globals', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
+    .then(r => r.json()).then(() => showToast('Сохранено'));
+});
+</script>

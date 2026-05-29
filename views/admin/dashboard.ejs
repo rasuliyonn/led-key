@@ -1,0 +1,25 @@
+<h1 class="admin-page-title">Дашборд</h1>
+<div class="admin-cards">
+  <div class="admin-stat-card">
+    <div class="admin-stat-card__value"><%= leadCount %></div>
+    <div class="admin-stat-card__label">Всего заявок</div>
+  </div>
+  <div class="admin-stat-card admin-stat-card--accent">
+    <div class="admin-stat-card__value"><%= unreadCount %></div>
+    <div class="admin-stat-card__label">Непрочитанных</div>
+  </div>
+  <div class="admin-stat-card">
+    <a href="/admin/leads" class="admin-stat-card__link">Перейти к заявкам →</a>
+  </div>
+</div>
+<div class="admin-quick-links">
+  <h2>Быстрые ссылки</h2>
+  <div class="admin-quick-links__grid">
+    <a href="/admin/globals" class="admin-quick-link">Контакты и настройки</a>
+    <a href="/admin/section/hero" class="admin-quick-link">Редактировать Hero</a>
+    <a href="/admin/section/pricing" class="admin-quick-link">Тарифы</a>
+    <a href="/admin/section/reviews" class="admin-quick-link">Отзывы</a>
+    <a href="/admin/section/faq" class="admin-quick-link">FAQ</a>
+    <a href="/admin/section/team" class="admin-quick-link">Команда</a>
+  </div>
+</div>

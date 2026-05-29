@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= g.meta_title %></title>
+  <meta name="description" content="<%= g.meta_description %>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- ============================ ШАПКА ============================ -->
+<header class="header" id="top">
+  <div class="container header__inner">
+    <a href="#top" class="logo" aria-label="Lead Key — на главную">
+      <img src="/<%= g.logo_path %>" alt="Avito Lead Key" class="logo__img">
+    </a>
+    <nav class="nav" id="nav">
+      <% navHeader.forEach(function(link) { %>
+      <a href="<%= link.href %>" class="nav__link"><%= link.label %></a>
+      <% }); %>
+    </nav>
+    <div class="header__actions">
+      <a href="tel:<%= g.phone_raw %>" class="header__phone"><%= g.phone %></a>
+      <a href="#contacts" class="btn btn--primary header__btn"><%= g.header_cta_text %></a>
+    </div>
+    <button class="burger" id="burger" aria-label="Меню" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================ HERO ============================ -->
+  <section class="hero section">
+    <div class="container hero__inner">
+      <div class="hero__content">
+        <h1 class="hero__title"><%- s.hero.title %></h1>
+        <a href="<%= s.hero.extra.cta_href || '#case' %>" class="btn btn--gradient hero__cta">
+          <%= s.hero.extra.cta_text || 'Смотреть кейсы' %> <span class="btn__arrow" aria-hidden="true">↗</span>
+        </a>
+        <div class="hero__socials">
+          <a href="<%= g.avito_url %>" class="social-btn" target="_blank" rel="noopener" aria-label="Avito">
+            <img src="/assets/logo-avito.svg" alt="">
+          </a>
+          <a href="<%= g.telegram_url %>" class="social-btn social-btn--tg" target="_blank" rel="noopener" aria-label="Telegram">
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="#2AABEE" d="M12 0a12 12 0 100 24 12 12 0 000-24z"/><path fill="#fff" d="M5.5 11.8l11-4.24c.51-.18.96.12.79.9l-1.87 8.83c-.14.65-.53.81-1.07.5l-2.96-2.18-1.43 1.38c-.16.16-.29.29-.59.29l.21-2.99 5.45-4.92c.24-.21-.05-.33-.37-.12l-6.73 4.24-2.9-.9c-.63-.2-.64-.63.13-.93z"/></svg>
+          </a>
+          <p class="hero__socials-text"><%- g.social_cta_text %></p>
+        </div>
+      </div>
+      <div class="hero__media">
+        <img src="/<%= g.hero_photo %>" alt="Команда Lead Key" class="hero__photo">
+        <% heroCards.forEach(function(card, i) { %>
+        <span class="hero__card hero__card--<%= i + 1 %>"><%- card.text_html %></span>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== ПРОБЛЕМЫ ====================== -->
+  <section class="problems section">
+    <div class="container card-block">
+      <span class="section-chip"><%= s.problems.chip %></span>
+      <div class="problems__head">
+        <div class="problems__heading">
+          <h2 class="section-title"><%- s.problems.title %></h2>
+          <p class="problems__sub"><%= s.problems.subtitle %></p>
+        </div>
+        <aside class="problems__bubble">
+          <p><%- s.problems.extra.bubble_text1 %></p>
+          <p><%- s.problems.extra.bubble_text2 %></p>
+          <img src="/<%= s.problems.extra.bubble_img %>" alt="" class="problems__bubble-img">
+        </aside>
+      </div>
+      <div class="problems__grid">
+        <ul class="problems__list">
+          <% problemsItems1.forEach(function(item) { %>
+          <li class="problems__item"><%= item.text %></li>
+          <% }); %>
+        </ul>
+        <ul class="problems__list">
+          <% problemsItems2.forEach(function(item) { %>
+          <li class="problems__item"><%= item.text %></li>
+          <% }); %>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== КАК МЫ ПРОДВИГАЕМ ====================== -->
+  <section class="process section" id="work">
+    <div class="container">
+      <span class="section-chip section-chip--center"><%= s.process.chip %></span>
+      <h2 class="section-title section-title--center"><%- s.process.title %></h2>
+      <div class="process__grid">
+        <% processSteps.forEach(function(step) { %>
+        <article class="step-card<%= step.is_accent ? ' step-card--accent' : '' %> reveal">
+          <span class="step-card__day"><%= step.day_label %></span>
+          <img src="/<%= step.icon_path %>" alt="" class="step-card__icon">
+          <h3 class="step-card__title"><%= step.title %></h3>
+          <p class="step-card__text"><%= step.text %></p>
+        </article>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== ВЕДЕНИЕ ====================== -->
+  <section class="maintenance section">
+    <div class="container card-block">
+      <span class="section-chip"><%= s.maintenance.chip %></span>
+      <h2 class="section-title"><%- s.maintenance.title %></h2>
+      <div class="checklist">
+        <ul class="checklist__col">
+          <% checklistCol1.forEach(function(item) { %>
+          <li class="checklist__item<%= item.is_accent ? ' checklist__item--accent' : '' %>"><%= item.text %></li>
+          <% }); %>
+        </ul>
+        <ul class="checklist__col">
+          <% checklistCol2.forEach(function(item) { %>
+          <li class="checklist__item<%= item.is_accent ? ' checklist__item--accent' : '' %>"><%= item.text %></li>
+          <% }); %>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== РЕЗУЛЬТАТЫ ====================== -->
+  <section class="results section">
+    <div class="container card-block">
+      <span class="section-chip"><%= s.results.chip %></span>
+      <div class="results__head">
+        <div>
+          <h2 class="section-title"><%- s.results.title %></h2>
+          <p class="results__text"><%= s.results.extra.description %></p>
+        </div>
+        <% if (featuredCounter) { %>
+        <div class="results__feature">
+          <div class="results__big"><span class="counter" data-target="<%= featuredCounter.value %>" data-prefix="<%= featuredCounter.prefix %>">0</span><span class="results__pct">%</span></div>
+          <p class="results__feature-label"><%= s.results.extra.feature_label %></p>
+        </div>
+        <% } %>
+      </div>
+      <div class="results__stats">
+        <% statsCounters.forEach(function(c) { %>
+        <div class="stat">
+          <div class="stat__value"><span class="counter" data-target="<%= c.value %>"<% if(c.prefix){ %> data-prefix="<%= c.prefix %>"<% } %><% if(c.suffix){ %> data-suffix="<%= c.suffix %>"<% } %><% if(c.use_grouping){ %> data-group="1"<% } %>>0</span><% if(c.unit){ %> <span class="stat__unit<%= c.value == 30 ? '-pct' : '' %>"><%= c.unit || '%' %></span><% } %></div>
+          <p class="stat__label"><%= c.label %></p>
+        </div>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== CTA-ФОРМА 1 ====================== -->
+  <section class="cta section">
+    <div class="container cta__inner">
+      <h2 class="cta__title"><%- s.cta1.title %></h2>
+      <form class="lead-form" novalidate>
+        <input type="hidden" name="form_source" value="cta1">
+        <div class="lead-form__row">
+          <input type="text" name="name" class="lead-form__input" placeholder="Имя" required>
+          <input type="tel" name="phone" class="lead-form__input lead-form__input--phone" placeholder="+7 (000) 000-00-00" required>
+          <button type="submit" class="btn btn--light lead-form__submit"><%= s.cta1.extra.button_text || 'Записаться' %></button>
+        </div>
+        <label class="lead-form__check">
+          <input type="checkbox" name="agree_pd" required>
+          <span>Я согласен(-на) на обработку моих <a href="https://lead-key.ru/approval2" target="_blank" rel="noopener">персональных данных</a> в соответствии с <a href="https://lead-key.ru/politics" target="_blank" rel="noopener">Политикой</a> по обработке и защиты персональных данных</span>
+        </label>
+        <label class="lead-form__check">
+          <input type="checkbox" name="agree_news">
+          <span>Я согласен(-на) на получение новостных рассылок, рассылок рекламного, информационного характера</span>
+        </label>
+        <p class="lead-form__success" hidden><%= s.cta1.extra.success_text || 'Спасибо! Заявка отправлена.' %></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ====================== О КОМАНДЕ ====================== -->
+  <section class="team section" id="aboutus">
+    <div class="container">
+      <span class="section-chip section-chip--center"><%= s.team.chip %></span>
+      <h2 class="section-title section-title--center"><%- s.team.title %></h2>
+      <div class="team__grid">
+        <% teamMembers.forEach(function(m) { %>
+        <article class="team-card reveal">
+          <div class="team-card__photo"><img src="/<%= m.photo_path %>" alt="<%= m.name %>"></div>
+          <div class="team-card__body">
+            <h3 class="team-card__name"><%= m.name %> <span class="team-card__info" title="<%= m.badge %>">i</span></h3>
+            <p class="team-card__role"><%= m.role %></p>
+          </div>
+        </article>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== СЕРТИФИКАТЫ ====================== -->
+  <section class="certs section">
+    <div class="container card-block certs__inner">
+      <div class="certs__text">
+        <span class="section-chip"><%= s.certs.chip %></span>
+        <h2 class="section-title"><%- s.certs.title %></h2>
+        <p class="certs__descr"><%= s.certs.extra.description %></p>
+      </div>
+      <div class="slider certs__slider" data-slider>
+        <button class="slider__arrow slider__arrow--prev" data-prev aria-label="Назад">‹</button>
+        <div class="slider__viewport">
+          <div class="slider__track">
+            <% certificates.forEach(function(cert) { %>
+            <div class="slider__slide"><img src="/<%= cert.image_path %>" alt="<%= cert.alt_text %>"></div>
+            <% }); %>
+          </div>
+        </div>
+        <button class="slider__arrow slider__arrow--next" data-next aria-label="Вперёд">›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== ТАРИФЫ ====================== -->
+  <section class="pricing section" id="price">
+    <div class="container">
+      <span class="section-chip section-chip--center"><%= s.pricing.chip %></span>
+      <h2 class="section-title section-title--center"><%- s.pricing.title %></h2>
+      <div class="pricing__grid">
+        <% plans.forEach(function(plan) { %>
+        <article class="plan plan--<%= plan.slug %> reveal">
+          <div class="plan__head">
+            <span class="plan__num"><%= plan.num_label %></span>
+            <h3 class="plan__name"><%= plan.name %></h3>
+            <p class="plan__for"><%- plan.subtitle %></p>
+            <p class="plan__price"><%- plan.price_text %></p>
+          </div>
+          <% if (plan.includes_text) { %>
+          <p class="plan__includes"><%= plan.includes_text %> <span class="plan__includes-tick">✓</span></p>
+          <% } %>
+          <ul class="plan__list">
+            <% plan.features.forEach(function(f) { %>
+            <li<% if(f.is_highlight) { %> class="plan__list-add"<% } %>><%= f.text %></li>
+            <% }); %>
+          </ul>
+          <a href="#contacts" class="btn btn--gradient plan__btn"><%= plan.button_text %></a>
+        </article>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== ПОЧЕМУ МЫ ====================== -->
+  <section class="benefits section">
+    <div class="container card-block">
+      <span class="section-chip"><%= s.benefits.chip %></span>
+      <h2 class="section-title"><%= s.benefits.title %></h2>
+      <div class="benefits__grid">
+        <% benefits.forEach(function(b) { %>
+        <article class="benefit benefit--<%= b.color %> reveal">
+          <div class="benefit__top"><span class="benefit__num"><%= b.number %></span>
+            <svg class="benefit__icon" viewBox="0 0 24 24" aria-hidden="true"><%- b.icon_svg %></svg>
+          </div>
+          <h3 class="benefit__title"><%= b.title %></h3>
+          <p class="benefit__text"><%= b.text %></p>
+        </article>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== КЕЙСЫ ====================== -->
+  <section class="cases section" id="case">
+    <div class="container">
+      <span class="section-chip section-chip--center"><%= s.cases.chip %></span>
+      <h2 class="section-title section-title--center"><%= s.cases.title %></h2>
+      <div class="cases__grid">
+        <% cases.forEach(function(c) { %>
+        <article class="case-card reveal">
+          <% if (c.logo_type === 'image' && c.logo_path) { %>
+          <div class="case-card__logo"><img src="/<%= c.logo_path %>" alt="<%= c.title %>"></div>
+          <% } else { %>
+          <div class="case-card__logo case-card__logo--text"><%= c.logo_text %></div>
+          <% } %>
+          <div class="case-card__body">
+            <span class="case-card__niche"><%= c.niche_label %></span>
+            <h3 class="case-card__title"><%= c.title %></h3>
+            <p class="case-card__meta"><strong>Период:</strong><br><%= c.period %></p>
+            <p class="case-card__meta"><strong>Услуги:</strong><br><%= c.services %></p>
+            <p class="case-card__lead">СТОИМОСТЬ ЛИДА: <%= c.lead_cost %><br>ОБЪЕМ ЛИДОВ: <%= c.lead_volume %> <span><%= c.lead_unit %></span></p>
+          </div>
+          <% if (c.link) { %>
+          <a href="<%= c.link %>" class="case-card__more" target="_blank" rel="noopener" aria-label="Подробнее">↗</a>
+          <% } %>
+        </article>
+        <% }); %>
+      </div>
+      <% if (s.cases.extra.all_cases_link) { %>
+      <a href="<%= s.cases.extra.all_cases_link %>" class="cases__all" target="_blank" rel="noopener"><%= s.cases.extra.all_cases_text || 'Смотреть все кейсы' %> <span aria-hidden="true">→</span></a>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- ====================== CTA-ФОРМА 2 ====================== -->
+  <section class="cta section">
+    <div class="container cta__inner">
+      <h2 class="cta__title"><%- s.cta2.title %></h2>
+      <% if (s.cta2.subtitle) { %><p class="cta__sub"><%- s.cta2.subtitle %></p><% } %>
+      <form class="lead-form" novalidate>
+        <input type="hidden" name="form_source" value="cta2">
+        <div class="lead-form__row">
+          <input type="text" name="name" class="lead-form__input" placeholder="Имя" required>
+          <input type="tel" name="phone" class="lead-form__input lead-form__input--phone" placeholder="+7 (000) 000-00-00" required>
+          <button type="submit" class="btn btn--light lead-form__submit"><%= s.cta2.extra.button_text || 'Записаться' %></button>
+        </div>
+        <label class="lead-form__check">
+          <input type="checkbox" name="agree_pd" required>
+          <span>Я согласен(-на) на обработку моих <a href="https://lead-key.ru/approval2" target="_blank" rel="noopener">персональных данных</a> в соответствии с <a href="https://lead-key.ru/politics" target="_blank" rel="noopener">Политикой</a> по обработке и защиты персональных данных</span>
+        </label>
+        <label class="lead-form__check">
+          <input type="checkbox" name="agree_news">
+          <span>Я согласен(-на) на получение новостных рассылок, рассылок рекламного, информационного характера</span>
+        </label>
+        <p class="lead-form__success" hidden><%= s.cta2.extra.success_text || 'Спасибо! Заявка отправлена.' %></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ====================== ОТЗЫВЫ ====================== -->
+  <section class="reviews section" id="reviews">
+    <div class="container">
+      <span class="section-chip section-chip--center"><%= s.reviews.chip %></span>
+      <h2 class="section-title section-title--center"><%= s.reviews.title %></h2>
+      <div class="slider reviews__slider" data-slider>
+        <button class="slider__arrow slider__arrow--prev" data-prev aria-label="Назад">‹</button>
+        <div class="slider__viewport">
+          <div class="slider__track">
+            <% reviews.forEach(function(r) { %>
+            <% if (r.type === 'video') { %>
+            <article class="review review--video slider__slide">
+              <div class="review__video-wrap">
+                <% if (r.video_url) { %>
+                <iframe src="<%= r.video_url %>" frameborder="0" allowfullscreen loading="lazy"></iframe>
+                <% } else if (r.video_path) { %>
+                <video controls preload="metadata"><source src="<%= r.video_path %>" type="video/mp4"></video>
+                <% } %>
+              </div>
+              <header class="review__head"><span class="review__name"><%= r.name %></span><% if(r.source){ %><span class="review__source"><%= r.source %></span><% } %></header>
+            </article>
+            <% } else { %>
+            <article class="review review--<%= r.color %> slider__slide">
+              <header class="review__head"><span class="review__name"><%= r.name %></span><span class="review__source"><%= r.source %></span></header>
+              <% if (r.link) { %><a href="<%= r.link %>" class="review__orig" target="_blank" rel="noopener">Смотреть оригинал отзыва</a><% } %>
+              <p class="review__text"<% if(r.text && r.text.length > 200){ %> data-clamp<% } %>><%= r.text %></p>
+              <% if (r.text && r.text.length > 200) { %><button class="review__expand" type="button">Читать еще</button><% } %>
+            </article>
+            <% } %>
+            <% }); %>
+          </div>
+        </div>
+        <button class="slider__arrow slider__arrow--next" data-next aria-label="Вперёд">›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== FAQ ====================== -->
+  <section class="faq section">
+    <div class="container">
+      <span class="section-chip section-chip--center"><%= s.faq.chip %></span>
+      <h2 class="section-title section-title--center"><%= s.faq.title %></h2>
+      <div class="accordion">
+        <% faqItems.forEach(function(item) { %>
+        <div class="accordion__item">
+          <button class="accordion__head" type="button"><span><%= item.question %></span><span class="accordion__icon"></span></button>
+          <div class="accordion__body"><p><%- item.answer %></p></div>
+        </div>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== ФИНАЛЬНЫЙ CTA ====================== -->
+  <section class="final-cta section" id="contacts">
+    <div class="final-cta__bg" style="background-image:url('/<%= g.footer_bg %>')" aria-hidden="true"></div>
+    <div class="container final-cta__inner">
+      <div class="final-cta__card">
+        <h2 class="final-cta__title"><%- s.final_cta.title %></h2>
+        <p class="final-cta__sub"><%= s.final_cta.subtitle %></p>
+        <form class="lead-form lead-form--dark" novalidate>
+          <input type="hidden" name="form_source" value="final_cta">
+          <input type="text" name="name" class="lead-form__input" placeholder="Ваше имя" required>
+          <input type="tel" name="phone" class="lead-form__input lead-form__input--phone" placeholder="+7 (000) 000-00-00" required>
+          <input type="text" name="link" class="lead-form__input" placeholder="Ссылка на Авито аккаунт">
+          <label class="lead-form__check">
+            <input type="checkbox" name="agree_pd" required>
+            <span>Я согласен(-на) на обработку моих <a href="https://lead-key.ru/approval2" target="_blank" rel="noopener">персональных данных</a> в соответствии с <a href="https://lead-key.ru/politics" target="_blank" rel="noopener">Политикой</a> по обработке и защиты персональных данных</span>
+          </label>
+          <label class="lead-form__check">
+            <input type="checkbox" name="agree_news">
+            <span>Я согласен(-на) на получение новостных рассылок, рассылок рекламного, информационного характера</span>
+          </label>
+          <button type="submit" class="btn btn--gradient lead-form__submit lead-form__submit--full"><%= s.final_cta.extra.button_text || 'Получить план продвижения' %></button>
+          <p class="lead-form__success" hidden><%= s.final_cta.extra.success_text || 'Спасибо! Заявка отправлена.' %></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================ ФУТЕР ============================ -->
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <div class="site-footer__col site-footer__col--brand">
+      <a href="#top" class="logo"><img src="/<%= g.logo_path %>" alt="Avito Lead Key" class="logo__img"></a>
+      <p class="site-footer__legal">ИНН <%= g.inn %><br>КПП <%= g.kpp %></p>
+    </div>
+    <nav class="site-footer__col site-footer__nav">
+      <% navFooter.forEach(function(link) { %>
+      <a href="<%= link.href %>"><%= link.label %></a>
+      <% }); %>
+    </nav>
+    <div class="site-footer__col site-footer__contacts">
+      <a href="tel:<%= g.phone_raw %>" class="site-footer__phone"><%= g.phone %></a>
+      <a href="mailto:<%= g.email %>" class="site-footer__mail"><%= g.email %></a>
+    </div>
+    <div class="site-footer__col site-footer__socials">
+      <div class="site-footer__social-row">
+        <a href="<%= g.avito_url %>" class="social-btn" target="_blank" rel="noopener" aria-label="Avito"><img src="/assets/logo-avito.svg" alt=""></a>
+        <a href="<%= g.telegram_url %>" class="social-btn social-btn--tg" target="_blank" rel="noopener" aria-label="Telegram">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="#2AABEE" d="M12 0a12 12 0 100 24 12 12 0 000-24z"/><path fill="#fff" d="M5.5 11.8l11-4.24c.51-.18.96.12.79.9l-1.87 8.83c-.14.65-.53.81-1.07.5l-2.96-2.18-1.43 1.38c-.16.16-.29.29-.59.29l.21-2.99 5.45-4.92c.24-.21-.05-.33-.37-.12l-6.73 4.24-2.9-.9c-.63-.2-.64-.63.13-.93z"/></svg>
+        </a>
+      </div>
+      <p class="site-footer__socials-text"><%- g.social_cta_text %></p>
+    </div>
+  </div>
+  <div class="container site-footer__bottom">
+    <p class="site-footer__copy">Копирайт: <%= g.copyright %></p>
+    <div class="site-footer__docs">
+      <% legalLinks.forEach(function(link) { %>
+      <a href="<%= link.url %>" target="_blank" rel="noopener"><%= link.label %></a>
+      <% }); %>
+    </div>
+  </div>
+</footer>
+
+<!-- Cookie-уведомление -->
+<div class="cookie" id="cookie" hidden>
+  <p class="cookie__text"><%- g.cookie_text %></p>
+  <button class="cookie__btn" id="cookieOk">OK</button>
+</div>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<h1 class="admin-page-title">Редактирование: <%= sectionName %></h1>
+
+<!-- Section scalar fields -->
+<% if (section) { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Основные поля секции</h2>
+  <form class="admin-form" onsubmit="saveSection(event, '<%= sectionId %>')">
+    <% if (section.chip !== undefined) { %>
+    <div class="admin-field">
+      <label>Чип (метка)</label>
+      <input type="text" name="chip" value="<%= section.chip || '' %>">
+    </div>
+    <% } %>
+    <div class="admin-field">
+      <label>Заголовок <small>(HTML разрешён)</small></label>
+      <textarea name="title" rows="2"><%= section.title || '' %></textarea>
+    </div>
+    <% if (section.subtitle !== undefined && section.subtitle !== null) { %>
+    <div class="admin-field">
+      <label>Подзаголовок</label>
+      <textarea name="subtitle" rows="2"><%= section.subtitle || '' %></textarea>
+    </div>
+    <% } %>
+    <% if (section.extra) { Object.keys(section.extra).forEach(function(key) { %>
+    <div class="admin-field">
+      <label>extra: <%= key %></label>
+      <% if (String(section.extra[key]).length > 80) { %>
+      <textarea name="extra_<%= key %>" rows="3"><%= section.extra[key] %></textarea>
+      <% } else { %>
+      <input type="text" name="extra_<%= key %>" value="<%= section.extra[key] %>">
+      <% } %>
+    </div>
+    <% }); } %>
+    <button type="submit" class="admin-btn">Сохранить секцию</button>
+  </form>
+</div>
+<% } %>
+
+<!-- Item lists per section type -->
+
+<% if (sectionId === 'hero' && items.heroCards) { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Плавающие карточки</h2>
+  <div class="admin-items" data-table="hero_cards">
+    <% items.heroCards.forEach(function(card) { %>
+    <div class="admin-item" data-id="<%= card.id %>">
+      <div class="admin-field"><label>Текст (HTML)</label><input type="text" name="text_html" value="<%- card.text_html.replace(/"/g, '&quot;') %>"></div>
+      <div class="admin-item__actions">
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">Удалить</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('hero_cards', {text_html:'Новая карточка', sort_order: 99})">+ Добавить карточку</button>
+</div>
+<% } %>
+
+<% if (sectionId === 'problems') { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Проблемы — колонка 1</h2>
+  <div class="admin-items" data-table="problems_items" data-filter="column_num=1">
+    <% if(items.items1) items.items1.forEach(function(item) { %>
+    <div class="admin-item" data-id="<%= item.id %>">
+      <div class="admin-field"><input type="text" name="text" value="<%= item.text %>"></div>
+      <div class="admin-item__actions">
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">💾</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">✕</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('problems_items', {text:'Новая проблема', column_num:1, sort_order: 99})">+ Добавить</button>
+</div>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Проблемы — колонка 2</h2>
+  <div class="admin-items" data-table="problems_items" data-filter="column_num=2">
+    <% if(items.items2) items.items2.forEach(function(item) { %>
+    <div class="admin-item" data-id="<%= item.id %>">
+      <div class="admin-field"><input type="text" name="text" value="<%= item.text %>"></div>
+      <div class="admin-item__actions">
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">💾</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">✕</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('problems_items', {text:'Новая проблема', column_num:2, sort_order: 99})">+ Добавить</button>
+</div>
+<% } %>
+
+<% if (sectionId === 'process') { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Шаги процесса</h2>
+  <div class="admin-items" data-table="process_steps">
+    <% if(items.steps) items.steps.forEach(function(step) { %>
+    <div class="admin-item" data-id="<%= step.id %>">
+      <div class="admin-field-row">
+        <div class="admin-field"><label>День</label><input type="text" name="day_label" value="<%= step.day_label %>"></div>
+        <div class="admin-field"><label>Заголовок</label><input type="text" name="title" value="<%= step.title %>"></div>
+      </div>
+      <div class="admin-field"><label>Текст</label><textarea name="text" rows="2"><%= step.text %></textarea></div>
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Иконка</label><input type="text" name="icon_path" value="<%= step.icon_path %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁</button></div>
+        <div class="admin-field"><label>Акцент</label><select name="is_accent"><option value="0"<%= step.is_accent ? '' : ' selected' %>>Нет</option><option value="1"<%= step.is_accent ? ' selected' : '' %>>Да</option></select></div>
+      </div>
+      <div class="admin-item__actions">
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">Удалить</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('process_steps', {day_label:'День X', title:'Название', text:'Описание', icon_path:'', is_accent:0, sort_order:99})">+ Добавить шаг</button>
+</div>
+<% } %>
+
+<% if (sectionId === 'maintenance') { %>
+<% ['col1','col2'].forEach(function(col, ci) { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Чеклист — колонка <%= ci+1 %></h2>
+  <div class="admin-items" data-table="checklist_items">
+    <% if(items[col]) items[col].forEach(function(item) { %>
+    <div class="admin-item" data-id="<%= item.id %>">
+      <div class="admin-field"><input type="text" name="text" value="<%= item.text %>"></div>
+      <div class="admin-item__actions">
+        <label><input type="checkbox" name="is_accent"<%= item.is_accent ? ' checked' : '' %>> Акцент</label>
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">💾</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">✕</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('checklist_items', {text:'Новый пункт', column_num:<%= ci+1 %>, is_accent:0, sort_order:99})">+ Добавить</button>
+</div>
+<% }); %>
+<% } %>
+
+<% if (sectionId === 'results') { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Счётчики</h2>
+  <div class="admin-items" data-table="counters">
+    <% var allCounters = (items.featured || []).concat(items.stats || []); allCounters.forEach(function(c) { %>
+    <div class="admin-item" data-id="<%= c.id %>">
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Значение</label><input type="number" name="value" value="<%= c.value %>"></div>
+        <div class="admin-field"><label>Префикс</label><input type="text" name="prefix" value="<%= c.prefix %>"></div>
+        <div class="admin-field"><label>Суффикс</label><input type="text" name="suffix" value="<%= c.suffix %>"></div>
+        <div class="admin-field"><label>Единица</label><input type="text" name="unit" value="<%= c.unit %>"></div>
+      </div>
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Подпись</label><input type="text" name="label" value="<%= c.label %>"></div>
+        <div class="admin-field"><label>Расположение</label><select name="location"><option value="featured"<%= c.location==='featured'?' selected':'' %>>Большой</option><option value="stats"<%= c.location==='stats'?' selected':'' %>>В ряд</option></select></div>
+        <div class="admin-field"><label>Разряды</label><select name="use_grouping"><option value="0"<%= c.use_grouping?'':' selected' %>>Нет</option><option value="1"<%= c.use_grouping?' selected':'' %>>Да</option></select></div>
+      </div>
+      <div class="admin-item__actions">
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">Удалить</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('counters', {value:0, prefix:'', suffix:'', unit:'', label:'Новый счётчик', use_grouping:0, location:'stats', sort_order:99})">+ Добавить счётчик</button>
+</div>
+<% } %>
+
+<% if (sectionId === 'team') { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Члены команды</h2>
+  <div class="admin-items" data-table="team_members">
+    <% if(items.members) items.members.forEach(function(m) { %>
+    <div class="admin-item" data-id="<%= m.id %>">
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Имя</label><input type="text" name="name" value="<%= m.name %>"></div>
+        <div class="admin-field"><label>Должность (бейдж)</label><input type="text" name="badge" value="<%= m.badge %>"></div>
+      </div>
+      <div class="admin-field"><label>Роль</label><input type="text" name="role" value="<%= m.role %>"></div>
+      <div class="admin-field"><label>Фото</label><input type="text" name="photo_path" value="<%= m.photo_path %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁</button></div>
+      <% if (m.photo_path) { %><img src="/<%= m.photo_path %>" class="admin-preview" alt=""><% } %>
+      <div class="admin-item__actions">
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">Удалить</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('team_members', {name:'Имя', badge:'Должность', role:'Роль', photo_path:'', sort_order:99})">+ Добавить</button>
+</div>
+<% } %>
+
+<% if (sectionId === 'certs') { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Сертификаты</h2>
+  <div class="admin-items" data-table="certificates">
+    <% if(items.certificates) items.certificates.forEach(function(cert) { %>
+    <div class="admin-item" data-id="<%= cert.id %>">
+      <div class="admin-field"><label>Изображение</label><input type="text" name="image_path" value="<%= cert.image_path %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁</button></div>
+      <img src="/<%= cert.image_path %>" class="admin-preview" alt="">
+      <div class="admin-item__actions">
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">Удалить</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('certificates', {image_path:'', alt_text:'Сертификат', sort_order:99})">+ Добавить</button>
+</div>
+<% } %>
+
+<% if (sectionId === 'pricing') { %>
+<% if(items.plans) items.plans.forEach(function(plan) { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Тариф: <%= plan.name %></h2>
+  <div class="admin-items" data-table="plans">
+    <div class="admin-item" data-id="<%= plan.id %>">
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Slug</label><input type="text" name="slug" value="<%= plan.slug %>"></div>
+        <div class="admin-field"><label>Номер</label><input type="text" name="num_label" value="<%= plan.num_label %>"></div>
+        <div class="admin-field"><label>Имя</label><input type="text" name="name" value="<%= plan.name %>"></div>
+      </div>
+      <div class="admin-field"><label>Подзаголовок (HTML)</label><input type="text" name="subtitle" value="<%- plan.subtitle.replace(/"/g, '&quot;') %>"></div>
+      <div class="admin-field"><label>Цена (HTML)</label><input type="text" name="price_text" value="<%- plan.price_text.replace(/"/g, '&quot;') %>"></div>
+      <div class="admin-field"><label>Включает текст</label><input type="text" name="includes_text" value="<%= plan.includes_text || '' %>"></div>
+      <div class="admin-field"><label>Кнопка</label><input type="text" name="button_text" value="<%= plan.button_text %>"></div>
+      <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить тариф</button>
+    </div>
+  </div>
+
+  <h3 style="margin:16px 0 8px">Возможности тарифа</h3>
+  <div class="admin-items" data-table="plan_features">
+    <% if(plan.features) plan.features.forEach(function(f) { %>
+    <div class="admin-item" data-id="<%= f.id %>">
+      <div class="admin-field-row">
+        <div class="admin-field" style="flex:3"><input type="text" name="text" value="<%= f.text %>"></div>
+        <div class="admin-field"><label><input type="checkbox" name="is_highlight"<%= f.is_highlight ? ' checked' : '' %>> Выделить</label></div>
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">💾</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">✕</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('plan_features', {plan_id:<%= plan.id %>, text:'Новая возможность', is_highlight:0, sort_order:99})">+ Добавить возможность</button>
+</div>
+<% }); %>
+<% } %>
+
+<% if (sectionId === 'benefits') { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Преимущества</h2>
+  <div class="admin-items" data-table="benefits">
+    <% if(items.benefits) items.benefits.forEach(function(b) { %>
+    <div class="admin-item" data-id="<%= b.id %>">
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Номер</label><input type="text" name="number" value="<%= b.number %>"></div>
+        <div class="admin-field"><label>Цвет</label><select name="color"><option value="blue"<%= b.color==='blue'?' selected':'' %>>Синий</option><option value="purple"<%= b.color==='purple'?' selected':'' %>>Фиолетовый</option></select></div>
+      </div>
+      <div class="admin-field"><label>Заголовок</label><input type="text" name="title" value="<%= b.title %>"></div>
+      <div class="admin-field"><label>Текст</label><textarea name="text" rows="2"><%= b.text %></textarea></div>
+      <div class="admin-field"><label>SVG-иконка (содержимое)</label><textarea name="icon_svg" rows="2"><%= b.icon_svg %></textarea></div>
+      <div class="admin-item__actions">
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">Удалить</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('benefits', {number:'05', title:'Новое', text:'Описание', icon_svg:'', color:'blue', sort_order:99})">+ Добавить</button>
+</div>
+<% } %>
+
+<% if (sectionId === 'cases') { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Кейсы</h2>
+  <div class="admin-items" data-table="cases">
+    <% if(items.cases) items.cases.forEach(function(c) { %>
+    <div class="admin-item" data-id="<%= c.id %>">
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Тип лого</label><select name="logo_type"><option value="image"<%= c.logo_type==='image'?' selected':'' %>>Картинка</option><option value="text"<%= c.logo_type==='text'?' selected':'' %>>Текст</option></select></div>
+        <div class="admin-field"><label>Лого (путь)</label><input type="text" name="logo_path" value="<%= c.logo_path || '' %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁</button></div>
+        <div class="admin-field"><label>Лого (текст)</label><input type="text" name="logo_text" value="<%= c.logo_text || '' %>"></div>
+      </div>
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Заголовок</label><input type="text" name="title" value="<%= c.title %>"></div>
+        <div class="admin-field"><label>Период</label><input type="text" name="period" value="<%= c.period %>"></div>
+      </div>
+      <div class="admin-field"><label>Услуги</label><input type="text" name="services" value="<%= c.services %>"></div>
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Стоимость лида</label><input type="text" name="lead_cost" value="<%= c.lead_cost %>"></div>
+        <div class="admin-field"><label>Объем лидов</label><input type="text" name="lead_volume" value="<%= c.lead_volume %>"></div>
+        <div class="admin-field"><label>Ед. изм.</label><input type="text" name="lead_unit" value="<%= c.lead_unit %>"></div>
+      </div>
+      <div class="admin-field"><label>Ссылка</label><input type="text" name="link" value="<%= c.link || '' %>"></div>
+      <div class="admin-item__actions">
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">Удалить</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('cases', {logo_type:'text', logo_text:'Название', title:'Ниша', period:'2024', services:'Описание', lead_cost:'0 ₽', lead_volume:'0', lead_unit:'шт/мес', sort_order:99})">+ Добавить кейс</button>
+</div>
+<% } %>
+
+<% if (sectionId === 'reviews') { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Отзывы (текст + видео)</h2>
+  <div class="admin-items" data-table="reviews">
+    <% if(items.reviews) items.reviews.forEach(function(r) { %>
+    <div class="admin-item" data-id="<%= r.id %>">
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Тип</label><select name="type"><option value="text"<%= r.type==='text'?' selected':'' %>>Текст</option><option value="video"<%= r.type==='video'?' selected':'' %>>Видео</option></select></div>
+        <div class="admin-field"><label>Имя</label><input type="text" name="name" value="<%= r.name %>"></div>
+        <div class="admin-field"><label>Источник</label><input type="text" name="source" value="<%= r.source || '' %>"></div>
+        <div class="admin-field"><label>Цвет</label><select name="color"><option value="green"<%= r.color==='green'?' selected':'' %>>Зелёный</option><option value="blue"<%= r.color==='blue'?' selected':'' %>>Синий</option><option value="purple"<%= r.color==='purple'?' selected':'' %>>Фиолетовый</option></select></div>
+      </div>
+      <div class="admin-field"><label>Текст отзыва</label><textarea name="text" rows="3"><%= r.text || '' %></textarea></div>
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Видео URL (YouTube/Rutube)</label><input type="text" name="video_url" value="<%= r.video_url || '' %>"></div>
+        <div class="admin-field"><label>Видео файл</label><input type="text" name="video_path" value="<%= r.video_path || '' %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁</button></div>
+      </div>
+      <div class="admin-field"><label>Ссылка на оригинал</label><input type="text" name="link" value="<%= r.link || '' %>"></div>
+      <div class="admin-item__actions">
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">Удалить</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('reviews', {type:'text', name:'Имя', source:'', text:'Текст отзыва', color:'green', sort_order:99})">+ Добавить отзыв</button>
+</div>
+<% } %>
+
+<% if (sectionId === 'faq') { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Вопросы и ответы</h2>
+  <div class="admin-items" data-table="faq_items">
+    <% if(items.faqItems) items.faqItems.forEach(function(f) { %>
+    <div class="admin-item" data-id="<%= f.id %>">
+      <div class="admin-field"><label>Вопрос</label><input type="text" name="question" value="<%= f.question %>"></div>
+      <div class="admin-field"><label>Ответ (HTML разрешён)</label><textarea name="answer" rows="3"><%= f.answer %></textarea></div>
+      <div class="admin-item__actions">
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">Удалить</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('faq_items', {question:'Новый вопрос?', answer:'Ответ', sort_order:99})">+ Добавить вопрос</button>
+</div>
+<% } %>
+
+<% if (sectionId === 'footer') { %>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Навигация футера</h2>
+  <div class="admin-items" data-table="nav_links">
+    <% if(items.navLinks) items.navLinks.forEach(function(l) { %>
+    <div class="admin-item" data-id="<%= l.id %>">
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Текст</label><input type="text" name="label" value="<%= l.label %>"></div>
+        <div class="admin-field"><label>Ссылка</label><input type="text" name="href" value="<%= l.href %>"></div>
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">💾</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">✕</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+</div>
+<div class="admin-panel">
+  <h2 class="admin-panel__title">Юридические ссылки</h2>
+  <div class="admin-items" data-table="legal_links">
+    <% if(items.legalLinks) items.legalLinks.forEach(function(l) { %>
+    <div class="admin-item" data-id="<%= l.id %>">
+      <div class="admin-field-row">
+        <div class="admin-field"><label>Текст</label><input type="text" name="label" value="<%= l.label %>"></div>
+        <div class="admin-field"><label>URL</label><input type="text" name="url" value="<%= l.url %>"></div>
+        <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">💾</button>
+        <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">✕</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <button class="admin-btn admin-btn--add" onclick="addItem('legal_links', {label:'Новая ссылка', url:'https://', sort_order:99})">+ Добавить</button>
+</div>
+<% } %>
+
+<% if (['cta1','cta2','final_cta'].includes(sectionId)) { %>
+<div class="admin-panel">
+  <p class="admin-hint">Настройки формы (тексты кнопок, сообщения успеха) находятся в полях "extra" выше.</p>
+</div>
+<% } %>

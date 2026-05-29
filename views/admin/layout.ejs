@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель — Lead Key</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <aside class="admin-sidebar">
+    <a href="/admin" class="admin-sidebar__logo">
+      <img src="/assets/logo.png" alt="Lead Key" height="32">
+      <span>Админ</span>
+    </a>
+    <nav class="admin-sidebar__nav">
+      <div class="admin-sidebar__group">
+        <span class="admin-sidebar__group-title">Общие</span>
+        <a href="/admin" class="admin-sidebar__link<%= page === 'dashboard' ? ' is-active' : '' %>">📊 Дашборд</a>
+        <a href="/admin/globals" class="admin-sidebar__link<%= page === 'globals' ? ' is-active' : '' %>">⚙️ Настройки</a>
+        <a href="/admin/media" class="admin-sidebar__link<%= page === 'media' ? ' is-active' : '' %>">🖼 Медиа</a>
+      </div>
+      <div class="admin-sidebar__group">
+        <span class="admin-sidebar__group-title">Секции сайта</span>
+        <a href="/admin/section/hero" class="admin-sidebar__link<%= page === 'section-hero' ? ' is-active' : '' %>">Hero</a>
+        <a href="/admin/section/problems" class="admin-sidebar__link<%= page === 'section-problems' ? ' is-active' : '' %>">Проблемы</a>
+        <a href="/admin/section/process" class="admin-sidebar__link<%= page === 'section-process' ? ' is-active' : '' %>">Процесс</a>
+        <a href="/admin/section/maintenance" class="admin-sidebar__link<%= page === 'section-maintenance' ? ' is-active' : '' %>">Ведение</a>
+        <a href="/admin/section/results" class="admin-sidebar__link<%= page === 'section-results' ? ' is-active' : '' %>">Результаты</a>
+        <a href="/admin/section/cta1" class="admin-sidebar__link<%= page === 'section-cta1' ? ' is-active' : '' %>">CTA форма 1</a>
+        <a href="/admin/section/team" class="admin-sidebar__link<%= page === 'section-team' ? ' is-active' : '' %>">Команда</a>
+        <a href="/admin/section/certs" class="admin-sidebar__link<%= page === 'section-certs' ? ' is-active' : '' %>">Сертификаты</a>
+        <a href="/admin/section/pricing" class="admin-sidebar__link<%= page === 'section-pricing' ? ' is-active' : '' %>">Тарифы</a>
+        <a href="/admin/section/benefits" class="admin-sidebar__link<%= page === 'section-benefits' ? ' is-active' : '' %>">Почему мы</a>
+        <a href="/admin/section/cases" class="admin-sidebar__link<%= page === 'section-cases' ? ' is-active' : '' %>">Кейсы</a>
+        <a href="/admin/section/cta2" class="admin-sidebar__link<%= page === 'section-cta2' ? ' is-active' : '' %>">CTA форма 2</a>
+        <a href="/admin/section/reviews" class="admin-sidebar__link<%= page === 'section-reviews' ? ' is-active' : '' %>">Отзывы</a>
+        <a href="/admin/section/faq" class="admin-sidebar__link<%= page === 'section-faq' ? ' is-active' : '' %>">FAQ</a>
+        <a href="/admin/section/final_cta" class="admin-sidebar__link<%= page === 'section-final_cta' ? ' is-active' : '' %>">Финальный CTA</a>
+        <a href="/admin/section/footer" class="admin-sidebar__link<%= page === 'section-footer' ? ' is-active' : '' %>">Футер</a>
+      </div>
+      <div class="admin-sidebar__group">
+        <span class="admin-sidebar__group-title">Данные</span>
+        <a href="/admin/leads" class="admin-sidebar__link<%= page === 'leads' ? ' is-active' : '' %>">📩 Заявки</a>
+      </div>
+    </nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="admin-header__left">
+        <a href="/" target="_blank" class="admin-header__site-link">Открыть сайт ↗</a>
+      </div>
+      <div class="admin-header__right">
+        <span><%= admin.username %></span>
+        <a href="/admin/logout" class="admin-header__logout">Выйти</a>
+      </div>
+    </header>
+    <div class="admin-content">
+      <%- include(contentView, locals) %>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

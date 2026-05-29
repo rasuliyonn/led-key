@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — Lead Key Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="login-body">
+  <div class="login-card">
+    <img src="/assets/logo.png" alt="Lead Key" height="40" class="login-logo">
+    <h1 class="login-title">Вход в панель управления</h1>
+    <% if (error) { %>
+    <p class="login-error"><%= error %></p>
+    <% } %>
+    <form method="POST" action="/admin/login">
+      <label class="login-field">
+        <span>Логин</span>
+        <input type="text" name="username" required autofocus>
+      </label>
+      <label class="login-field">
+        <span>Пароль</span>
+        <input type="password" name="password" required>
+      </label>
+      <button type="submit" class="login-btn">Войти</button>
+    </form>
+  </div>
+</body>
+</html>

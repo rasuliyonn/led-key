@@ -1,207 +1,106 @@
-# CLAUDE.md — документация проекта Lead-Key
+# CLAUDE.md
 
-> Этот файл Claude Code (и другие ИИ-ассистенты) автоматически читают в начале каждой сессии.
-> Он описывает, **что это за проект, как он устроен и как его дорабатывать**. Держите его в актуальном состоянии.
-
----
-
-## 1. Что это за проект
-
-Лендинг агентства **Lead Key** — услуга продвижения бизнеса на Авито «под ключ».
-Это **пересборка** оригинального Tilda-сайта https://lead-key.ru/ на чистом коде (без Tilda, без фреймворков и сборщиков). Цель пересборки — чистый, читаемый, легко редактируемый код при максимальной визуальной близости к оригиналу.
-
-Оригинал для сверки всегда доступен по адресу выше.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ---
 
-## 2. Стек и принципы
+## What This Is
 
-- **HTML5** (семантика: `header`/`nav`/`section`/`footer`, иерархия `h1→h2→h3`).
-- **CSS** на **Flexbox/Grid**. Никакого абсолютного позиционирования для раскладки — только для мелкого декора (плавающие карточки hero, «плюсы»).
-- **Ванильный JavaScript** (ES5-совместимый, один IIFE, без зависимостей).
-- **CSS-переменные** в `:root` — единая точка правки цветов/шрифтов/отступов.
-- **БЭМ** в именах классов (`.block`, `.block__element`, `.block--modifier`).
-- Шрифт **Inter Tight** (Google Fonts).
+Landing page for **Lead Key** agency — Avito marketing service. Rebuilt from the original Tilda site at https://lead-key.ru/ into clean hand-coded HTML/CSS/JS, now with an **Express.js backend** and **admin panel** for content management.
 
-Никаких npm-пакетов, build-шага и т.п. — проект открывается как есть.
+All page content is stored in SQLite and rendered server-side via EJS templates. The admin panel provides full CRUD for every section, lead management, and media uploads.
 
 ---
 
-## 3. Структура
-
-```
-copy/
-├── index.html        # вся разметка (16 секций + шапка/футер)
-├── css/style.css     # все стили: :root-токены → секции → адаптив
-├── js/main.js        # вся интерактивность (9 модулей, см. §8)
-├── assets/           # 25 изображений с осмысленными именами (см. §10)
-└── CLAUDE.md         # этот файл
-```
-
-Весь сайт — **одна страница** (`index.html`). Ссылки на «Все кейсы» и юр-документы ведут на оригинальный `lead-key.ru` (отдельных страниц не делали).
-
----
-
-## 4. Запуск и предпросмотр
-
-Статический сайт — достаточно открыть файл, но из-за путей к ассетам лучше через локальный сервер:
+## Commands
 
 ```bash
-cd /Users/victes/WebstormProjects/copy
-python3 -m http.server 8848
-# открыть http://localhost:8848/
+npm install                  # install dependencies (first time)
+npm run dev                  # start with --watch (auto-restart on changes)
+npm start                    # production start
+# Server runs at http://localhost:3000, admin at http://localhost:3000/admin
 ```
 
-Для проверки правок в браузере у Claude есть MCP-инструменты Chrome (навигация, скриншоты, выполнение JS). Адаптив проверяется реальным изменением ширины окна браузера (программный `resize_window` в этом окружении вьюпорт не сжимает — нужно менять размер окна руками).
+**Environment variables** (`.env` file):
+- `PORT` — server port (default 3000)
+- `JWT_SECRET` — required for admin auth
+- `ADMIN_USER` / `ADMIN_PASS` — initial admin credentials (default `admin`/`admin123`, only used on first DB init)
+
+**Database**: SQLite file at `data/leadkey.db`. Auto-created from `data/schema.sql` + `data/seed.sql` on first run. Delete the `.db` file to re-seed.
 
 ---
 
-## 5. Дизайн-система (`:root` в `css/style.css`)
+## Architecture
 
-Меняете переменную — меняется весь сайт. Основные:
-
-| Переменная | Значение | Назначение |
-|---|---|---|
-| `--purple` | `#955FE9` | основной бренд-цвет |
-| `--blue` | `#3290CC` | конец градиента |
-| `--red` | `#F95D51` | красные плашки-выделения |
-| `--red-accent` | `#FF4053` | акценты, ошибки форм |
-| `--ink` | `#1B1B1B` | основной текст |
-| `--muted` | `#6E6E73` | вторичный текст |
-| `--bg` | `#F1F1F3` | фон страницы |
-| `--grad-brand` | `linear-gradient(115deg,#955FE9,#3290CC)` | главный градиент (hero, кнопки, CTA) |
-| `--grad-plan-*` | — | градиенты карточек тарифов (start/optimum/scale) |
-| `--container` | `1200px` | ширина контентного контейнера |
-| `--radius` / `--radius-lg` / `--radius-pill` | `18 / 30 / 999px` | радиусы |
-| `--font` | `'Inter Tight', Arial, sans-serif` | шрифт |
-| `--space-section` | `clamp(48px,7vw,96px)` | вертикальные отступы секций |
-
-Утилитарные классы: `.container` (центровка), `.card-block` (белая скруглённая «карточка» крупной секции), `.section-title` (+`--center`), `.section-chip` (+`--center`), `.mark--red`/`.mark--blue` (плашки в заголовках), `.btn` (+`--primary`/`--gradient`/`--light`).
-
----
-
-## 6. Карта секций (`index.html`, сверху вниз)
-
-Каждая секция — `<section class="… section">` с `.container` внутри. Якоря используются в меню.
-
-| # | Класс / якорь | Содержание |
-|---|---|---|
-| — | `.header` | лого, `.nav`, телефон, кнопка «Обсудить проект», `.burger` |
-| 1 | `.hero` | H1 + «Смотреть кейсы» + фото `.hero__media` + 3 плавающие `.hero__card` + соц-иконки |
-| 2 | `.problems` | заголовок + `.problems__bubble` + 2 колонки `.problems__item` (иконка-флажок через CSS) |
-| 3 | `.process` `#work` | 5 карточек `.step-card` (День 1–5; пятая — `.step-card--accent`) |
-| 4 | `.maintenance` | `.checklist` — 2 колонки `.checklist__item` (галочки через CSS) |
-| 5 | `.results` | win-win текст + `.counter`-счётчики (`.results__big` + `.results__stats`) |
-| 6 | `.cta` | форма «Запишитесь на разбор» (`.lead-form`) |
-| 7 | `.team` `#aboutus` | 4 `.team-card` (фото на градиенте, роль) |
-| 8 | `.certs` | текст + `.slider` сертификатов |
-| 9 | `.pricing` `#price` | 3 `.plan` (`--start`/`--optimum`/`--scale`) со списками услуг |
-| 10 | `.benefits` | 4 `.benefit` (01–04, инлайн-SVG-иконки) |
-| 11 | `.cases` `#case` | 8 `.case-card` (лого, ниша, цифры лидов) + «Смотреть все кейсы» |
-| 12 | `.cta` | форма «Хотите такие же результаты?» |
-| 13 | `.reviews` `#reviews` | `.slider` из `.review` (4 карточки, «Читать еще») |
-| 14 | `.faq` | `.accordion` на 17 `.accordion__item` |
-| 15 | `.final-cta` `#contacts` | фон-фото + тёмная форма `.lead-form--dark` («Получить план») |
-| — | `.site-footer` | лого, ИНН/КПП, меню, телефон, почта, соц-иконки, копирайт, юр-ссылки |
-| — | `.cookie` `#cookie` | cookie-уведомление |
-
----
-
-## 7. JavaScript (`js/main.js`)
-
-Один IIFE, 9 модулей (помечены комментариями `/* ---- N. … ---- */`):
-
-1. **Бургер-меню** — `#burger` ↔ `#nav` (класс `.is-open`).
-2. **Появление при скролле** — `IntersectionObserver` навешивает `.is-visible` на `.reveal`.
-3. **Счётчики** — анимация `.counter` по `data-target` (+ `data-prefix`/`data-suffix`/`data-group` для разрядов).
-4. **Слайдеры** — общий код для всех `[data-slider]` (стрелки `[data-prev]`/`[data-next]` + свайп).
-5. **«Читать еще»** — раскрытие `.review__text[data-clamp]`.
-6. **FAQ-аккордеон** — `.accordion__head` тогглит `.is-open` и `max-height`.
-7. **Формы** — `maskPhone()` (маска `+7 (___) ___-__-__`), валидация, **`submitLead(data)` — заглушка под бэкенд** (см. §9, рецепт «подключить отправку»).
-8. **Cookie** — показ/скрытие, запоминание в `localStorage` (`lk-cookie`).
-9. **Якоря** — плавная прокрутка с учётом высоты шапки (−80px).
-
----
-
-## 8. Адаптивность
-
-Брейкпоинты в конце `css/style.css`:
-- **≤1024px** — сетки в 2 колонки, hero в 1 колонку.
-- **≤768px** — меню → бургер, большинство сеток в 1 колонку, формы в столбик.
-- **≤560px** — всё в 1 колонку, плавающие карточки hero становятся статичными.
-
-Размеры шрифтов — через `clamp()`, поэтому масштабируются плавно.
-
----
-
-## 9. Рецепты типичных правок
-
-**Сменить цвет/градиент бренда** → правьте `--purple` / `--grad-brand` в `:root`.
-
-**Изменить контакты** → телефон ищите по `+7 915 057 79 73` и `tel:+79150577973`, почту по `sale@lead-key.ru` (шапка + футер).
-
-**Добавить/изменить вопрос FAQ** → скопируйте блок `.accordion__item` в секции `.faq` (`<button class="accordion__head">…</button>` + `<div class="accordion__body"><p>…</p></div>`). JS подхватит автоматически.
-
-**Добавить кейс** → скопируйте `.case-card` в `.cases__grid`; лого положите в `assets/` (`case-*.svg`) и пропишите в `.case-card__logo`. Если лого нет — `.case-card__logo--text` с текстом.
-
-**Добавить пункт в тариф** → добавьте `<li>` в нужный `.plan__list` (галочка рисуется автоматически через CSS-`::before`).
-
-**Заменить фото/иконку** → положите файл в `assets/` под тем же именем (см. §10) или поправьте `src`/`url()`.
-
-**Подключить реальную отправку форм** → в `js/main.js` найдите функцию `submitLead(data)` (модуль 7). Сейчас это заглушка (`console.log`). Замените тело на свой запрос, например:
-```js
-function submitLead(data) {
-  return fetch('https://ваш-эндпоинт/lead', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-}
 ```
-`data` содержит `name`, `phone`, опционально `link`, и флаги согласий.
+server.js                    # Express app entry point
+├── routes/
+│   ├── public.js            # GET / — renders index.ejs with full page data
+│   ├── auth.js              # /admin/login, /admin/logout (JWT cookie auth)
+│   ├── admin.js             # /admin/* — dashboard, section editors, leads, media
+│   └── api.js               # /api/* — REST API (lead submission + admin CRUD)
+├── models/db.js             # better-sqlite3 wrapper, all queries, getFullPageData()
+├── middleware/auth.js        # JWT cookie verification (requireAuth, requireAuthApi)
+├── views/
+│   ├── index.ejs            # Full landing page template (was static index.html)
+│   └── admin/               # Admin panel views (layout.ejs + content partials)
+├── data/
+│   ├── schema.sql           # All table definitions (20 tables)
+│   ├── seed.sql             # Initial content extracted from original HTML
+│   └── leadkey.db           # SQLite database (gitignored, auto-created)
+├── css/style.css            # Landing page styles (CSS variables, BEM, responsive)
+├── js/main.js               # Landing page interactivity (9 modules in one IIFE)
+├── public/
+│   ├── css/admin.css        # Admin panel styles
+│   ├── js/admin.js          # Admin panel JS
+│   └── uploads/             # User-uploaded images/videos (gitignored)
+└── assets/                  # Static images, logos, icons
+```
 
-**Добавить новую секцию** → вставьте `<section class="myblock section"><div class="container">…</div></section>`; для «белой карточки на сером фоне» добавьте `.card-block`. Карточки внутри помечайте `.reveal` для анимации появления.
+### Data Flow
+
+1. `routes/public.js` calls `db.getFullPageData()` which assembles all tables into one object
+2. Object passed to `views/index.ejs` as template variables: `g` (globals), `s` (sections map), plus arrays for each content type
+3. Admin panel edits via `/api/*` endpoints write directly to SQLite; changes appear on next page load
+
+### Key Patterns
+
+- **Generic CRUD**: `routes/api.js` has a table-driven CRUD system via `TABLE_SCHEMAS` — validates table name against whitelist, then builds INSERT/UPDATE/DELETE dynamically. All item tables use `/api/items/:table/:id`.
+- **Two auth middlewares**: `requireAuth` (redirects to login) for page routes, `requireAuthApi` (returns 401 JSON) for API routes.
+- **Lead submission** (`POST /api/lead`) is the only public API endpoint — has in-memory rate limiting (5/min per IP).
+- **File uploads** via multer to `public/uploads/images/` or `public/uploads/videos/`, max 100MB.
 
 ---
 
-## 10. Ассеты (`assets/`, 25 файлов)
+## Frontend Conventions
 
-Имена осмысленные:
-- `logo.png`, `logo-avito.svg` — логотип Lead Key и значок Avito.
-- `hero-team.png`, `footer-team.png` — фото команды (hero и футер).
-- `team-1-sultan.png … team-4-dmitriy.png` — карточки команды.
-- `step-1-megaphone.png … step-5-rocket.svg` — 3D-иконки шагов.
-- `case-{nvmarket,graund,akvasink,vayar,caldo,demontage}.svg` — логотипы кейсов.
-- `cert-1..3.png` — сертификаты.
-- `icon-check.svg`, `icon-flag.png` — иконки списков (через CSS `background`).
-- `problems-group.png` — фото в баббле «Проблемы».
+- **CSS**: Variables in `:root` (see `css/style.css`). Key: `--purple` (#955FE9), `--grad-brand`, `--container` (1200px). BEM naming. Flexbox/Grid only — no absolute positioning for layout.
+- **JS**: Vanilla ES5, single IIFE, 9 modules marked with `/* ---- N. … ---- */` comments. No npm dependencies on frontend.
+- **Breakpoints**: 1024px → 768px → 560px (end of `css/style.css`).
+- **Font**: Inter Tight from Google Fonts.
 
-Все картинки локальные (скачаны с tildacdn оригинала). Резервных дублей не храним.
+### Section Map
+
+Each landing page section is a `<section class="… section">` with `.container` inside. Sections in order: `.hero`, `.problems`, `.process`, `.maintenance`, `.results`, `.cta` (×2), `.team`, `.certs`, `.pricing`, `.benefits`, `.cases`, `.reviews`, `.faq`, `.final-cta`. Reference sections by class name when making changes.
 
 ---
 
-## 11. Известные приближения / TODO
+## Database Schema
 
-- **Шрифт** Inter Tight (Google Fonts) вместо кастомного Tilda-файла — начертания совпадают.
-- **Иконки шагов** — цветные Fluent-3D; в оригинале они в голубоватой заливке (можно затемнить CSS-фильтром, если нужна точность).
-- **Логотип «ГРАУНД»** (кейс кадастра) в оригинале не отдавался отдельным файлом — заменён текстовым логотипом.
-- **Плавающие карточки hero** собраны без пиксельного попадания (по требованию — без абсолютной раскладки).
-- **Формы** без бэкенда — только валидация + сообщение (см. рецепт подключения).
+20 tables in `data/schema.sql`. Main content tables all have `sort_order` for ordering:
 
----
-
-## 12. Подводные камни (уроки)
-
-- **`[hidden]` vs `display`**: если у элемента задан `display:flex/grid`, он перебивает HTML-атрибут `hidden`. Для скрываемых через `hidden` элементов добавляйте `.el[hidden]{display:none}` (так починен `.cookie`).
-- **Zero-блоки Tilda** в оригинале абсолютно спозиционированы — при доработке сохраняйте подход «Flex/Grid», не возвращайте `position:absolute; top/left` для раскладки.
-- **Порядок DOM ≠ визуальный порядок** в исходном Tilda-HTML — при сверке с оригиналом ориентируйтесь на скриншоты, а не на порядок элементов в коде.
+- `globals` — key-value config (phone, email, meta tags, paths)
+- `sections` — per-section chip/title/subtitle + `extra_json` for section-specific fields
+- Content tables: `nav_links`, `hero_cards`, `problems_items`, `process_steps`, `checklist_items`, `counters`, `team_members`, `certificates`, `plans`, `plan_features`, `benefits`, `cases`, `reviews`, `faq_items`, `legal_links`
+- `leads` — form submissions with `is_read` flag
+- `admin_user` — bcrypt-hashed credentials
 
 ---
 
-## 13. Как ставить задачи ИИ по этому проекту
+## Gotchas
 
-Чтобы доработки шли быстро и точно:
-- Указывайте **секцию по классу/якорю** из §6 («в `.pricing` добавь…», «в FAQ (`.accordion`)…»).
-- Для стиля — называйте **переменную** из §5 («сделай бренд зеленее → поменяй `--purple`»).
-- Прикладывайте скриншот или ссылку, если нужно «как на оригинале».
-- Просите проверять результат в браузере (MCP Chrome) и на мобильной ширине.
+- **`[hidden]` vs `display`**: Elements with `display:flex/grid` override HTML `hidden` attribute. Use `[hidden]{display:none}` when needed.
+- **Static file serving**: Two paths — `css/style.css` and `js/main.js` are served from repo root (backward compat), while `public/css/` and `public/js/` serve admin assets.
+- **EJS uses `<%-` for raw HTML** (section titles contain markup like `<span class="mark">`). Use `<%=` only for escaped text.
+- **DB re-seed**: Delete `data/leadkey.db` to regenerate from schema+seed. WAL mode files (`.db-wal`, `.db-shm`) also get recreated.
+- **No build step**: Frontend CSS/JS are plain files, no bundler or transpiler.
