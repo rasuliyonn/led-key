@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:lead-key.ru)",
+      "Bash(curl:*)",
+      "Read(//tmp/**)"
+    ]
+  }
+}
