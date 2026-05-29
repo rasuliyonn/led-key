@@ -55,7 +55,9 @@ if (!(Get-Command node -ErrorAction SilentlyContinue)) {
     Log "Installing Node.js $NODE_VERSION..."
     choco install nodejs-lts -y --no-progress
     # Refresh PATH
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $machinePath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $userPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path = "$machinePath;$userPath"
 } else {
     $currentVersion = (node -v) -replace 'v','' -split '\.' | Select-Object -First 1
     if ([int]$currentVersion -ge [int]$NODE_VERSION) {
@@ -105,12 +107,8 @@ if (Test-Path $envFile) {
     [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
     $JWT_SECRET = [BitConverter]::ToString($bytes) -replace '-',''
 
-    @"
-PORT=$APP_PORT
-JWT_SECRET=$JWT_SECRET
-ADMIN_USER=$ADMIN_USER
-ADMIN_PASS=$ADMIN_PASS
-"@ | Out-File -FilePath $envFile -Encoding UTF8 -NoNewline
+    $envContent = "PORT=$APP_PORT`nJWT_SECRET=$JWT_SECRET`nADMIN_USER=$ADMIN_USER`nADMIN_PASS=$ADMIN_PASS"
+    $envContent | Out-File -FilePath $envFile -Encoding UTF8 -NoNewline
     Log ".env created with generated JWT_SECRET"
 }
 
