@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Landing page for **Lead Key** agency — Avito marketing service. Rebuilt from the original Tilda site at https://lead-key.ru/ into clean hand-coded HTML/CSS/JS, now with an **Express.js backend** and **admin panel** for content management.
 
-All page content is stored in SQLite and rendered server-side via EJS templates. The admin panel provides full CRUD for every section, lead management, and media uploads.
+All page content is stored in Turso (cloud SQLite via libsql) and rendered server-side via EJS templates. The admin panel provides full CRUD for every section, lead management, and media uploads. Deployed on Vercel.
 
 ---
 
@@ -21,12 +21,14 @@ npm start                    # production start
 # Server runs at http://localhost:3000, admin at http://localhost:3000/admin
 ```
 
-**Environment variables** (`.env` file):
+**Environment variables** (`.env` file / Vercel dashboard):
 - `PORT` — server port (default 3000)
 - `JWT_SECRET` — required for admin auth
+- `TURSO_DATABASE_URL` — Turso database URL (e.g. `libsql://your-db.turso.io`)
+- `TURSO_AUTH_TOKEN` — Turso auth token
 - `ADMIN_USER` / `ADMIN_PASS` — initial admin credentials (default `admin`/`admin123`, only used on first DB init)
 
-**Database**: SQLite file at `data/leadkey.db`. Auto-created from `data/schema.sql` + `data/seed.sql` on first run. Delete the `.db` file to re-seed.
+**Database**: Turso (cloud SQLite). Schema in `data/schema.sql`, seed in `data/seed.sql`. Auto-initialized on first request if tables don't exist.
 
 ---
 

@@ -7,9 +7,6 @@ const db = require('./models/db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Init database
-db.init();
-
 // View engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -19,12 +16,18 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static files — serve assets, css, js, uploads
+// DB init middleware — ensures database is ready before handling requests
+let initPromise = null;
+app.use((req, res, next) => {
+  if (!initPromise) initPromise = db.init();
+  initPromise.then(() => next()).catch(next);
+});
+
+// Static files
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
 app.use('/js', express.static(path.join(__dirname, 'public', 'js')));
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
-// Also serve original css/js from root for backward compat
 app.use('/css/style.css', express.static(path.join(__dirname, 'css', 'style.css')));
 app.use('/js/main.js', express.static(path.join(__dirname, 'js', 'main.js')));
 
@@ -34,7 +37,11 @@ app.use('/admin', require('./routes/auth'));
 app.use('/admin', require('./routes/admin'));
 app.use('/api', require('./routes/api'));
 
-app.listen(PORT, () => {
-  console.log(`Lead-Key server running at http://localhost:${PORT}`);
-  console.log(`Admin panel: http://localhost:${PORT}/admin`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Lead-Key server running at http://localhost:${PORT}`);
+    console.log(`Admin panel: http://localhost:${PORT}/admin`);
+  });
+}
+
+module.exports = app;

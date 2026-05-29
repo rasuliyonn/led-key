@@ -32,7 +32,7 @@ const upload = multer({
 
 // --- Public: Lead submission ---
 const rateMap = new Map();
-router.post('/lead', (req, res) => {
+router.post('/lead', async (req, res) => {
   const ip = req.ip;
   const now = Date.now();
   const hits = rateMap.get(ip) || [];
@@ -44,9 +44,10 @@ router.post('/lead', (req, res) => {
   const { name, phone, link, agree_pd, agree_news, form_source } = req.body;
   if (!phone) return res.status(400).json({ error: 'Phone required' });
 
-  db.getDb().prepare(
-    'INSERT INTO leads (name, phone, link, agree_pd, agree_news, form_source) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run(name || '', phone, link || '', agree_pd ? 1 : 0, agree_news ? 1 : 0, form_source || 'unknown');
+  await db.run(
+    'INSERT INTO leads (name, phone, link, agree_pd, agree_news, form_source) VALUES (?, ?, ?, ?, ?, ?)',
+    [name || '', phone, link || '', agree_pd ? 1 : 0, agree_news ? 1 : 0, form_source || 'unknown']
+  );
 
   res.json({ ok: true });
 });
@@ -55,22 +56,23 @@ router.post('/lead', (req, res) => {
 router.use(requireAuthApi);
 
 // Update globals
-router.put('/globals', (req, res) => {
+router.put('/globals', async (req, res) => {
   const updates = req.body;
-  const stmt = db.getDb().prepare('UPDATE globals SET value = ? WHERE key = ?');
-  const tx = db.getDb().transaction((data) => {
-    Object.entries(data).forEach(([key, value]) => stmt.run(value, key));
-  });
-  tx(updates);
+  const stmts = Object.entries(updates).map(([key, value]) => ({
+    sql: 'UPDATE globals SET value = ? WHERE key = ?',
+    args: [value, key]
+  }));
+  await db.batch(stmts);
   res.json({ ok: true });
 });
 
 // Update section
-router.put('/sections/:id', (req, res) => {
+router.put('/sections/:id', async (req, res) => {
   const { chip, title, subtitle, extra_json } = req.body;
-  db.getDb().prepare(
-    'UPDATE sections SET chip = ?, title = ?, subtitle = ?, extra_json = ? WHERE id = ?'
-  ).run(chip ?? null, title ?? null, subtitle ?? null, extra_json ?? '{}', req.params.id);
+  await db.run(
+    'UPDATE sections SET chip = ?, title = ?, subtitle = ?, extra_json = ? WHERE id = ?',
+    [chip ?? null, title ?? null, subtitle ?? null, extra_json ?? '{}', req.params.id]
+  );
   res.json({ ok: true });
 });
 
@@ -99,10 +101,10 @@ function validateTable(table) {
 }
 
 // List items
-router.get('/items/:table', (req, res) => {
+router.get('/items/:table', async (req, res) => {
   try {
     validateTable(req.params.table);
-    const items = db.getItems(req.params.table);
+    const items = await db.getItems(req.params.table);
     res.json(items);
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -110,7 +112,7 @@ router.get('/items/:table', (req, res) => {
 });
 
 // Create item
-router.post('/items/:table', (req, res) => {
+router.post('/items/:table', async (req, res) => {
   try {
     const cols = validateTable(req.params.table);
     const data = req.body;
@@ -118,9 +120,10 @@ router.post('/items/:table', (req, res) => {
     const placeholders = usedCols.map(() => '?').join(', ');
     const values = usedCols.map(c => data[c] ?? null);
 
-    const result = db.getDb().prepare(
-      `INSERT INTO ${req.params.table} (${usedCols.join(', ')}) VALUES (${placeholders})`
-    ).run(...values);
+    const result = await db.run(
+      `INSERT INTO ${req.params.table} (${usedCols.join(', ')}) VALUES (${placeholders})`,
+      values
+    );
 
     res.json({ ok: true, id: result.lastInsertRowid });
   } catch (e) {
@@ -129,7 +132,7 @@ router.post('/items/:table', (req, res) => {
 });
 
 // Update item
-router.put('/items/:table/:id', (req, res) => {
+router.put('/items/:table/:id', async (req, res) => {
   try {
     const cols = validateTable(req.params.table);
     const data = req.body;
@@ -140,7 +143,7 @@ router.put('/items/:table/:id', (req, res) => {
     const values = usedCols.map(c => data[c] ?? null);
     values.push(parseInt(req.params.id));
 
-    db.getDb().prepare(`UPDATE ${req.params.table} SET ${sets} WHERE id = ?`).run(...values);
+    await db.run(`UPDATE ${req.params.table} SET ${sets} WHERE id = ?`, values);
     res.json({ ok: true });
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -148,10 +151,10 @@ router.put('/items/:table/:id', (req, res) => {
 });
 
 // Delete item
-router.delete('/items/:table/:id', (req, res) => {
+router.delete('/items/:table/:id', async (req, res) => {
   try {
     validateTable(req.params.table);
-    db.getDb().prepare(`DELETE FROM ${req.params.table} WHERE id = ?`).run(parseInt(req.params.id));
+    await db.run(`DELETE FROM ${req.params.table} WHERE id = ?`, [parseInt(req.params.id)]);
     res.json({ ok: true });
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -159,15 +162,15 @@ router.delete('/items/:table/:id', (req, res) => {
 });
 
 // Reorder items
-router.put('/items/:table/reorder', (req, res) => {
+router.put('/items/:table/reorder', async (req, res) => {
   try {
     validateTable(req.params.table);
-    const { order } = req.body; // [{id, sort_order}]
-    const stmt = db.getDb().prepare(`UPDATE ${req.params.table} SET sort_order = ? WHERE id = ?`);
-    const tx = db.getDb().transaction((items) => {
-      items.forEach(item => stmt.run(item.sort_order, item.id));
-    });
-    tx(order);
+    const { order } = req.body;
+    const stmts = order.map(item => ({
+      sql: `UPDATE ${req.params.table} SET sort_order = ? WHERE id = ?`,
+      args: [item.sort_order, item.id]
+    }));
+    await db.batch(stmts);
     res.json({ ok: true });
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -185,7 +188,6 @@ router.post('/upload', upload.single('file'), (req, res) => {
 // Delete uploaded file
 router.delete('/upload/:filename', (req, res) => {
   const filename = req.params.filename;
-  // Prevent path traversal
   if (filename.includes('/') || filename.includes('..')) return res.status(400).json({ error: 'Invalid filename' });
 
   const imgPath = path.join(__dirname, '..', 'public', 'uploads', 'images', filename);
@@ -198,18 +200,18 @@ router.delete('/upload/:filename', (req, res) => {
 });
 
 // Leads
-router.get('/leads', (req, res) => {
-  const leads = db.getDb().prepare('SELECT * FROM leads ORDER BY created_at DESC').all();
+router.get('/leads', async (req, res) => {
+  const leads = await db.query('SELECT * FROM leads ORDER BY created_at DESC');
   res.json(leads);
 });
 
-router.put('/leads/:id/read', (req, res) => {
-  db.getDb().prepare('UPDATE leads SET is_read = 1 WHERE id = ?').run(parseInt(req.params.id));
+router.put('/leads/:id/read', async (req, res) => {
+  await db.run('UPDATE leads SET is_read = 1 WHERE id = ?', [parseInt(req.params.id)]);
   res.json({ ok: true });
 });
 
-router.delete('/leads/:id', (req, res) => {
-  db.getDb().prepare('DELETE FROM leads WHERE id = ?').run(parseInt(req.params.id));
+router.delete('/leads/:id', async (req, res) => {
+  await db.run('DELETE FROM leads WHERE id = ?', [parseInt(req.params.id)]);
   res.json({ ok: true });
 });
 
