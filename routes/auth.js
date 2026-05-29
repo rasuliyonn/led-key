@@ -14,9 +14,9 @@ router.get('/login', (req, res) => {
   res.render('admin/login', { error: null });
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', (req, res) => {
   const { username, password } = req.body;
-  const user = await db.queryGet('SELECT * FROM admin_user WHERE username = ?', [username]);
+  const user = db.getDb().prepare('SELECT * FROM admin_user WHERE username = ?').get(username);
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
     return res.render('admin/login', { error: 'Неверный логин или пароль' });
   }
