@@ -1,5 +1,5 @@
-# ============================================================
-# Lead Key — automated deploy script for Windows Server / Windows 10+
+﻿# ============================================================
+# Lead Key -- automated deploy script for Windows Server / Windows 10+
 # Usage: Run PowerShell as Administrator, then:
 #   Set-ExecutionPolicy Bypass -Scope Process
 #   .\deploy-windows.ps1
@@ -26,7 +26,7 @@ function Err($msg) { Write-Host "[X] $msg" -ForegroundColor Red; exit 1 }
 
 Write-Host ""
 Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "  Lead Key — Windows Deploy"
+Write-Host "  Lead Key -- Windows Deploy"
 Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -99,7 +99,7 @@ npm install --production
 $envFile = Join-Path $APP_DIR ".env"
 
 if (Test-Path $envFile) {
-    Warn ".env already exists — skipping (delete manually to regenerate)"
+    Warn ".env already exists -- skipping (delete manually to regenerate)"
 } else {
     Log "Creating .env..."
     # Generate random JWT secret
@@ -252,10 +252,10 @@ Write-Host "  Admin:  http://localhost:$APP_PORT/admin"
 Write-Host "  User:   $ADMIN_USER"
 Write-Host ""
 Write-Host "  Useful commands:" -ForegroundColor Gray
-Write-Host "    pm2 status          — check app status"
-Write-Host "    pm2 logs $APP_NAME  — view logs"
-Write-Host "    pm2 restart $APP_NAME — restart app"
-Write-Host "    cd $APP_DIR         — project directory"
+Write-Host "    pm2 status          -- check app status"
+Write-Host "    pm2 logs $APP_NAME  -- view logs"
+Write-Host "    pm2 restart $APP_NAME -- restart app"
+Write-Host "    cd $APP_DIR         -- project directory"
 Write-Host ""
 Warn "CHANGE admin password after first login!"
 Write-Host ""
