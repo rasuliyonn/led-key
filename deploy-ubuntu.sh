@@ -3,8 +3,7 @@ set -euo pipefail
 
 # ============================================================
 # Lead Key — automated deploy script for Ubuntu 22.04+ / VPS
-# Usage: curl -sL <raw-url> | sudo bash
-#   or:  sudo bash deploy.sh
+# Usage: sudo bash deploy-ubuntu.sh
 # ============================================================
 
 # --- Config (edit before running) ---
@@ -31,11 +30,11 @@ warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 err()  { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
 # --- Root check ---
-[[ $EUID -ne 0 ]] && err "Run as root: sudo bash deploy.sh"
+[[ $EUID -ne 0 ]] && err "Run as root: sudo bash deploy-ubuntu.sh"
 
 echo ""
 echo "========================================="
-echo "  Lead Key — Automated Deploy"
+echo "  Lead Key — Ubuntu Deploy"
 echo "========================================="
 echo ""
 
