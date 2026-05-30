@@ -103,7 +103,7 @@ input { font-family: inherit; }
 .section-chip--center + .section-title--center { margin-top: 22px; margin-bottom: 48px; }
 
 /* Цветные «плашки» в заголовках */
-.mark { border-radius: 12px; padding: 0 .25em; white-space: nowrap; }
+.mark { border-radius: 12px; padding: 0 .25em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .mark--red { background: var(--red); color: #fff; }
 .mark--blue { background: #C9D6F7; color: var(--ink); }
 
