@@ -13,7 +13,7 @@ INSERT INTO globals (key, value, label, field_type) VALUES
 ('meta_description', 'Закажите услугу продвижения на Авито от команды экспертов Lead Key по выгодным ценам. Запишитесь на бесплатный разбор стратегии. Официальный партнёр Avito.', 'Описание страницы (description)', 'textarea'),
 ('copyright', '© 2024 Avito Lead Key. Все права защищены.', 'Копирайт', 'text'),
 ('logo_path', 'assets/logo.png', 'Логотип', 'text'),
-('hero_photo', 'assets/hero-team.png', 'Фото героя', 'text'),
+('hero_photo', 'assets/hero-photo.jpg', 'Фото героя', 'text'),
 ('footer_bg', 'assets/footer-team.png', 'Фон финального CTA', 'text'),
 ('social_cta_text', 'Напишите нам и <strong>получи аудит</strong> размещения в подарок', 'Текст соц. кнопок', 'textarea'),
 ('header_cta_text', 'Обсудить проект', 'Текст кнопки в шапке', 'text'),
