@@ -211,35 +211,63 @@ input { font-family: inherit; }
 
 .hero__media {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero__photo-wrap {
   background: var(--grad-brand);
   border-radius: var(--radius-lg);
   min-height: 520px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  overflow: visible;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
 }
 .hero__photo {
   max-height: 600px;
+  max-width: 100%;
   width: auto;
   align-self: flex-end;
   filter: drop-shadow(0 20px 40px rgba(0, 0, 0, .15));
 }
-/* Плавающие карточки героя (декор, позиционируются относительно медиа) */
+/* Плавающие карточки героя */
+.hero__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 16px;
+}
 .hero__card {
-  position: absolute;
   background: rgba(255, 255, 255, .9);
   backdrop-filter: blur(6px);
   border-radius: 16px;
   padding: 16px 22px;
   font-size: 16px;
   line-height: 1.25;
-  max-width: 230px;
   box-shadow: var(--shadow-soft);
 }
-.hero__card--1 { top: 18%; right: -6%; }
-.hero__card--2 { bottom: 16%; left: -8%; text-align: center; }
-.hero__card--3 { top: 46%; right: -4%; background: rgba(149, 95, 233, .92); color: #fff; }
+.hero__card--3 { background: rgba(149, 95, 233, .92); color: #fff; }
+
+/* Desktop: cards float over photo */
+@media (min-width: 1025px) {
+  .hero__cards {
+    position: absolute;
+    inset: 0;
+    display: block;
+    margin-top: 0;
+  }
+  .hero__card {
+    position: absolute;
+    max-width: 230px;
+  }
+  .hero__card--1 { top: 18%; right: -6%; }
+  .hero__card--2 { bottom: 16%; left: -8%; text-align: center; }
+  .hero__card--3 { top: 46%; right: -4%; }
+}
 
 /* ============================ ПРОБЛЕМЫ ============================ */
 .problems__head {
@@ -661,10 +689,7 @@ input { font-family: inherit; }
    ========================================================= */
 @media (max-width: 1024px) {
   .hero__inner { grid-template-columns: 1fr; }
-  .hero__media { min-height: 440px; }
-  .hero__card--1 { right: 2%; }
-  .hero__card--2 { left: 2%; }
-  .hero__card--3 { right: 2%; }
+  .hero__photo-wrap { min-height: 440px; }
   .process__grid { grid-template-columns: repeat(2, 1fr); }
   .process__grid .step-card:nth-child(4),
   .process__grid .step-card--accent { grid-column: auto; }
@@ -709,8 +734,8 @@ input { font-family: inherit; }
   .slider__arrow { width: 42px; height: 42px; font-size: 22px; }
   .site-footer__inner { grid-template-columns: 1fr; }
   .site-footer__bottom { flex-direction: column; align-items: flex-start; }
-  .hero__card { position: static; max-width: none; margin-top: 12px; backdrop-filter: none; }
-  .hero__card--3 { color: #fff; }
-  .hero__media { padding: 20px; }
+  .hero__photo-wrap { min-height: auto; }
+  .hero__media { padding: 0; }
+  .hero__photo-wrap { padding: 20px; }
   .final-cta__inner { justify-content: center; }
 }

@@ -54,10 +54,14 @@
         </div>
       </div>
       <div class="hero__media">
-        <img src="/<%= g.hero_photo %>" alt="Команда Lead Key" class="hero__photo">
-        <% heroCards.forEach(function(card, i) { %>
-        <span class="hero__card hero__card--<%= i + 1 %>"><%- card.text_html %></span>
-        <% }); %>
+        <div class="hero__photo-wrap">
+          <img src="/<%= g.hero_photo %>" alt="Команда Lead Key" class="hero__photo">
+        </div>
+        <div class="hero__cards">
+          <% heroCards.forEach(function(card, i) { %>
+          <span class="hero__card hero__card--<%= i + 1 %>"><%- card.text_html %></span>
+          <% }); %>
+        </div>
       </div>
     </div>
   </section>
