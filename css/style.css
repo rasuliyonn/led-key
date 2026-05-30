@@ -218,19 +218,19 @@ input { font-family: inherit; }
 .hero__photo-wrap {
   background: var(--grad-brand);
   border-radius: var(--radius-lg);
-  min-height: 520px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   overflow: hidden;
   position: relative;
   width: 100%;
+  padding: 20px;
 }
 .hero__photo {
-  max-height: 600px;
-  max-width: 100%;
-  width: auto;
-  align-self: flex-end;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  object-fit: cover;
   filter: drop-shadow(0 20px 40px rgba(0, 0, 0, .15));
 }
 /* Плавающие карточки героя */
@@ -689,7 +689,7 @@ input { font-family: inherit; }
    ========================================================= */
 @media (max-width: 1024px) {
   .hero__inner { grid-template-columns: 1fr; }
-  .hero__photo-wrap { min-height: 440px; }
+  .hero__photo-wrap { padding: 16px; }
   .process__grid { grid-template-columns: repeat(2, 1fr); }
   .process__grid .step-card:nth-child(4),
   .process__grid .step-card--accent { grid-column: auto; }
@@ -734,8 +734,8 @@ input { font-family: inherit; }
   .slider__arrow { width: 42px; height: 42px; font-size: 22px; }
   .site-footer__inner { grid-template-columns: 1fr; }
   .site-footer__bottom { flex-direction: column; align-items: flex-start; }
-  .hero__photo-wrap { min-height: auto; }
   .hero__media { padding: 0; }
-  .hero__photo-wrap { padding: 20px; }
+  .hero__photo-wrap { padding: 12px; }
+  .hero__photo { border-radius: 8px; }
   .final-cta__inner { justify-content: center; }
 }
