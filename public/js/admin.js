@@ -91,6 +91,29 @@
       });
   };
 
+  // Mobile sidebar toggle
+  (function() {
+    var burger = document.getElementById('adminBurger');
+    var sidebar = document.querySelector('.admin-sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    if (!burger || !sidebar) return;
+
+    function toggle() {
+      sidebar.classList.toggle('is-open');
+      if (overlay) overlay.classList.toggle('is-open');
+    }
+    function close() {
+      sidebar.classList.remove('is-open');
+      if (overlay) overlay.classList.remove('is-open');
+    }
+    burger.addEventListener('click', toggle);
+    if (overlay) overlay.addEventListener('click', close);
+    // Close on nav link click
+    sidebar.querySelectorAll('.admin-sidebar__link').forEach(function(link) {
+      link.addEventListener('click', close);
+    });
+  })();
+
   // Upload file and set field value
   window.uploadForField = function(btn) {
     var input = btn.previousElementSibling;
