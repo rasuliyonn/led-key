@@ -3,13 +3,15 @@ set -euo pipefail
 
 # ============================================================
 # Lead Key — automated deploy script for Ubuntu 22.04+ / VPS
-# Usage: sudo bash deploy-ubuntu.sh
+# Usage: sudo bash deploy-ubuntu.sh [domain]
+# Examples: sudo bash deploy-ubuntu.sh              — IP-only (no domain)
+#           sudo bash deploy-ubuntu.sh lead-key.ru   — with domain + SSL
 # ============================================================
 
 # --- Config (edit before running) ---
 APP_NAME="led-key"
 REPO_URL="https://github.com/rasuliyonn/led-key.git"
-DOMAIN="lead-key.ru"                    # your domain
+DOMAIN="${1:-}"                          # pass domain as argument, or leave empty for IP-only
 APP_DIR="/var/www/$APP_NAME"
 APP_PORT=6654
 NODE_MAJOR=22
@@ -120,31 +122,34 @@ pm2 startup systemd -u root --hp /root 2>/dev/null || true
 
 # --- 11. Nginx config ---
 log "Configuring Nginx..."
-cat > "/etc/nginx/sites-available/$APP_NAME" <<'NGINX'
+
+if [[ -n "$DOMAIN" ]]; then
+    SERVER_NAME="$DOMAIN www.$DOMAIN"
+else
+    SERVER_NAME="_"
+fi
+
+cat > "/etc/nginx/sites-available/$APP_NAME" <<NGINX
 server {
     listen 80;
     listen [::]:80;
-    server_name DOMAIN_PLACEHOLDER www.DOMAIN_PLACEHOLDER;
+    server_name $SERVER_NAME;
 
     client_max_body_size 100M;
 
     location / {
-        proxy_pass http://127.0.0.1:PORT_PLACEHOLDER;
+        proxy_pass http://127.0.0.1:$APP_PORT;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
     }
 }
 NGINX
-
-# Replace placeholders
-sed -i "s/DOMAIN_PLACEHOLDER/$DOMAIN/g" "/etc/nginx/sites-available/$APP_NAME"
-sed -i "s/PORT_PLACEHOLDER/$APP_PORT/g" "/etc/nginx/sites-available/$APP_NAME"
 
 # Enable site
 ln -sf "/etc/nginx/sites-available/$APP_NAME" "/etc/nginx/sites-enabled/"
@@ -166,25 +171,29 @@ ufw allow 443/tcp
 ufw --force enable
 log "Firewall enabled (22, 80, 443)"
 
-# --- 13. SSL ---
-echo ""
-warn "SSL setup requires domain $DOMAIN to point to this server's IP."
-read -p "Domain already points here? Install SSL now? (y/n): " -n 1 -r
-echo ""
+# --- 13. SSL (only if domain is set) ---
+if [[ -n "$DOMAIN" ]]; then
+    echo ""
+    warn "SSL setup requires domain $DOMAIN to point to this server's IP."
+    read -p "Domain already points here? Install SSL now? (y/n): " -n 1 -r
+    echo ""
 
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    log "Requesting SSL certificate..."
-    certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos --register-unsafely-without-email || {
-        warn "SSL failed — run manually later: certbot --nginx -d $DOMAIN -d www.$DOMAIN"
-    }
-    log "SSL installed"
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        log "Requesting SSL certificate..."
+        certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos --register-unsafely-without-email || {
+            warn "SSL failed — run manually later: certbot --nginx -d $DOMAIN -d www.$DOMAIN"
+        }
+        log "SSL installed"
+    else
+        warn "Skipping SSL. Run later: sudo certbot --nginx -d $DOMAIN -d www.$DOMAIN"
+    fi
+
+    # --- 14. Cron for SSL renewal ---
+    (crontab -l 2>/dev/null; echo "0 3 * * * certbot renew --quiet --post-hook 'systemctl reload nginx'") | sort -u | crontab -
+    log "SSL auto-renewal cron added"
 else
-    warn "Skipping SSL. Run later: sudo certbot --nginx -d $DOMAIN -d www.$DOMAIN"
+    warn "No domain set — skipping SSL. To add later: sudo certbot --nginx -d YOUR_DOMAIN"
 fi
-
-# --- 14. Cron for SSL renewal ---
-(crontab -l 2>/dev/null; echo "0 3 * * * certbot renew --quiet --post-hook 'systemctl reload nginx'") | sort -u | crontab -
-log "SSL auto-renewal cron added"
 
 # --- Done ---
 echo ""
@@ -192,8 +201,9 @@ echo "========================================="
 echo -e "${GREEN}  Deploy complete!${NC}"
 echo "========================================="
 echo ""
-echo "  Site:   http://$DOMAIN"
-echo "  Admin:  http://$DOMAIN/admin"
+SITE_HOST="${DOMAIN:-$(hostname -I | awk '{print $1}')}"
+echo "  Site:   http://$SITE_HOST"
+echo "  Admin:  http://$SITE_HOST/admin"
 echo "  User:   $ADMIN_USER"
 echo ""
 echo "  Useful commands:"
