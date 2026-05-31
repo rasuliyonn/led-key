@@ -3,7 +3,11 @@
   <% globals.forEach(function(g) { %>
   <div class="admin-field">
     <label><%= g.label || g.key %></label>
-    <% if (g.field_type === 'textarea') { %>
+    <% if (g.field_type === 'file') { %>
+    <input type="hidden" name="<%= g.key %>" value="<%= g.value %>">
+    <button class="admin-btn admin-btn--sm" type="button" onclick="uploadForField(this)">📁 Загрузить</button>
+    <% if (g.value) { %><div class="upload-preview" style="margin-top:8px"><img src="/<%= g.value %>" style="max-width:200px;max-height:140px;border-radius:8px;object-fit:cover;"></div><% } %>
+    <% } else if (g.field_type === 'textarea') { %>
     <textarea name="<%= g.key %>" rows="3"><%= g.value %></textarea>
     <% } else { %>
     <input type="text" name="<%= g.key %>" value="<%= g.value %>">

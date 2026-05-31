@@ -34,6 +34,10 @@ function init() {
   const ensureGlobal = db.prepare('INSERT OR IGNORE INTO globals (key, value, label, field_type) VALUES (?, ?, ?, ?)');
   ensureGlobal.run('max_bot_url', '', 'Ссылка на бота MAX (для виджета чата)', 'url');
 
+  // Migrate file-type globals
+  const setFileType = db.prepare("UPDATE globals SET field_type = 'file' WHERE key = ? AND field_type != 'file'");
+  ['logo_path', 'hero_photo', 'footer_bg'].forEach(k => setFileType.run(k));
+
   return db;
 }
 
