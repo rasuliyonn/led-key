@@ -99,6 +99,14 @@ router.use(requireAuthApi);
 // Update globals
 router.put('/globals', (req, res) => {
   const updates = req.body;
+  // Delete old uploaded files when file-path globals change
+  const getGlobal = db.getDb().prepare('SELECT value FROM globals WHERE key = ?');
+  Object.entries(updates).forEach(([key, value]) => {
+    if (GLOBAL_FILE_KEYS.includes(key)) {
+      const old = getGlobal.get(key);
+      if (old && old.value && old.value !== value) removeUploadedFile(old.value);
+    }
+  });
   const stmt = db.getDb().prepare('UPDATE globals SET value = ? WHERE key = ?');
   const tx = db.getDb().transaction((data) => {
     Object.entries(data).forEach(([key, value]) => stmt.run(value, key));
@@ -115,6 +123,24 @@ router.put('/sections/:id', (req, res) => {
   ).run(chip ?? null, title ?? null, subtitle ?? null, extra_json ?? '{}', req.params.id);
   res.json({ ok: true });
 });
+
+// --- File cleanup helper ---
+const FILE_COLUMNS = {
+  process_steps: ['icon_path'],
+  team_members: ['photo_path'],
+  certificates: ['image_path'],
+  cases: ['logo_path'],
+  reviews: ['video_path'],
+};
+const GLOBAL_FILE_KEYS = ['logo_path', 'hero_photo', 'footer_bg'];
+
+function removeUploadedFile(filePath) {
+  if (!filePath) return;
+  const normalized = filePath.startsWith('/') ? filePath : '/' + filePath;
+  if (!normalized.startsWith('/uploads/')) return;
+  const full = path.join(__dirname, '..', 'public', normalized);
+  try { if (fs.existsSync(full)) fs.unlinkSync(full); } catch (e) { /* ignore */ }
+}
 
 // --- Generic CRUD for item tables ---
 const TABLE_SCHEMAS = {
@@ -178,6 +204,19 @@ router.put('/items/:table/:id', (req, res) => {
     const usedCols = cols.filter(c => data[c] !== undefined);
     if (!usedCols.length) return res.json({ ok: true });
 
+    // Delete old uploaded files when file columns change
+    const fileCols = FILE_COLUMNS[req.params.table];
+    if (fileCols) {
+      const old = db.getDb().prepare(`SELECT * FROM ${req.params.table} WHERE id = ?`).get(parseInt(req.params.id));
+      if (old) {
+        fileCols.forEach(col => {
+          if (data[col] !== undefined && old[col] && old[col] !== data[col]) {
+            removeUploadedFile(old[col]);
+          }
+        });
+      }
+    }
+
     const sets = usedCols.map(c => `${c} = ?`).join(', ');
     const values = usedCols.map(c => data[c] ?? null);
     values.push(parseInt(req.params.id));
@@ -193,6 +232,12 @@ router.put('/items/:table/:id', (req, res) => {
 router.delete('/items/:table/:id', (req, res) => {
   try {
     validateTable(req.params.table);
+    // Delete associated uploaded files before removing record
+    const fileCols = FILE_COLUMNS[req.params.table];
+    if (fileCols) {
+      const old = db.getDb().prepare(`SELECT * FROM ${req.params.table} WHERE id = ?`).get(parseInt(req.params.id));
+      if (old) fileCols.forEach(col => removeUploadedFile(old[col]));
+    }
     db.getDb().prepare(`DELETE FROM ${req.params.table} WHERE id = ?`).run(parseInt(req.params.id));
     res.json({ ok: true });
   } catch (e) {
