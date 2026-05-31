@@ -17,7 +17,8 @@ INSERT INTO globals (key, value, label, field_type) VALUES
 ('footer_bg', 'assets/footer-team.png', 'Фон финального CTA', 'text'),
 ('social_cta_text', 'Напишите нам и <strong>получи аудит</strong> размещения в подарок', 'Текст соц. кнопок', 'textarea'),
 ('header_cta_text', 'Обсудить проект', 'Текст кнопки в шапке', 'text'),
-('cookie_text', '<strong>Этот сайт использует файлы cookie.</strong><br>Продолжая пользоваться сайтом, вы соглашаетесь с их использованием и с <a href="https://lead-key.ru/politics" target="_blank" rel="noopener">политикой обработки данных.</a>', 'Текст cookie', 'textarea');
+('cookie_text', '<strong>Этот сайт использует файлы cookie.</strong><br>Продолжая пользоваться сайтом, вы соглашаетесь с их использованием и с <a href="https://lead-key.ru/politics" target="_blank" rel="noopener">политикой обработки данных.</a>', 'Текст cookie', 'textarea'),
+('max_bot_url', '', 'Ссылка на бота MAX (для виджета чата)', 'url');
 
 -- ============ SECTIONS ============
 INSERT INTO sections (id, chip, title, subtitle, extra_json) VALUES

@@ -29,6 +29,11 @@ function init() {
 
     console.log('Database initialized with seed data. Admin:', user);
   }
+
+  // Migrations: ensure new globals exist
+  const ensureGlobal = db.prepare('INSERT OR IGNORE INTO globals (key, value, label, field_type) VALUES (?, ?, ?, ?)');
+  ensureGlobal.run('max_bot_url', '', 'Ссылка на бота MAX (для виджета чата)', 'url');
+
   return db;
 }
 

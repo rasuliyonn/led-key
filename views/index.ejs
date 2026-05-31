@@ -451,6 +451,19 @@
   </div>
 </footer>
 
+<% if (g.max_bot_url) { %>
+<!-- MAX Messenger чат-кнопка -->
+<a href="<%= g.max_bot_url %>" class="max-chat-btn" target="_blank" rel="noopener" aria-label="Написать в MAX" title="Написать нам в MAX">
+  <svg viewBox="0 0 40 40" width="28" height="28" fill="none" aria-hidden="true">
+    <rect width="40" height="40" rx="10" fill="#fff"/>
+    <path d="M10 13a3 3 0 013-3h14a3 3 0 013 3v10a3 3 0 01-3 3h-5l-4 4v-4h-5a3 3 0 01-3-3V13z" fill="#5B2EBF"/>
+    <circle cx="16" cy="18" r="1.5" fill="#fff"/>
+    <circle cx="20" cy="18" r="1.5" fill="#fff"/>
+    <circle cx="24" cy="18" r="1.5" fill="#fff"/>
+  </svg>
+</a>
+<% } %>
+
 <!-- Cookie-уведомление -->
 <div class="cookie" id="cookie" hidden>
   <p class="cookie__text"><%- g.cookie_text %></p>

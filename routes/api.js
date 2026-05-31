@@ -3,8 +3,48 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
 const { requireAuthApi } = require('../middleware/auth');
 const db = require('../models/db');
+
+// --- MAX Messenger notification ---
+function notifyMax(lead) {
+  const token = process.env.MAX_BOT_TOKEN;
+  const chatId = process.env.MAX_CHAT_ID;
+  if (!token || !chatId) return;
+
+  const text = [
+    '📩 *Новая заявка с сайта*',
+    '',
+    `👤 Имя: ${lead.name || '—'}`,
+    `📞 Телефон: ${lead.phone}`,
+    lead.link ? `🔗 Ссылка: ${lead.link}` : '',
+    `📋 Форма: ${lead.form_source || 'unknown'}`,
+    `🕐 ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}`
+  ].filter(Boolean).join('\n');
+
+  const body = JSON.stringify({ text, format: 'markdown' });
+
+  const req = https.request({
+    hostname: 'platform-api.max.ru',
+    path: `/messages?chat_id=${chatId}`,
+    method: 'POST',
+    headers: {
+      'Authorization': token,
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(body)
+    }
+  }, (res) => {
+    if (res.statusCode !== 200) {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => console.error('MAX API error:', res.statusCode, data));
+    }
+  });
+  req.on('error', (err) => console.error('MAX notify error:', err.message));
+  req.write(body);
+  req.end();
+}
 
 // File upload config
 const storage = multer.diskStorage({
@@ -47,6 +87,8 @@ router.post('/lead', (req, res) => {
   db.getDb().prepare(
     'INSERT INTO leads (name, phone, link, agree_pd, agree_news, form_source) VALUES (?, ?, ?, ?, ?, ?)'
   ).run(name || '', phone, link || '', agree_pd ? 1 : 0, agree_news ? 1 : 0, form_source || 'unknown');
+
+  notifyMax({ name, phone, link, form_source });
 
   res.json({ ok: true });
 });
