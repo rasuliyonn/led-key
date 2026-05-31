@@ -101,7 +101,7 @@
       </div>
       <div class="admin-field"><label>Текст</label><textarea name="text" rows="2"><%= step.text %></textarea></div>
       <div class="admin-field-row">
-        <div class="admin-field"><label>Иконка</label><input type="text" name="icon_path" value="<%= step.icon_path %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁</button></div>
+        <div class="admin-field"><label>Иконка</label><input type="hidden" name="icon_path" value="<%= step.icon_path %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁 Загрузить</button><% if (step.icon_path) { %><div class="upload-preview" style="margin-top:8px"><img src="/<%= step.icon_path %>" style="max-width:120px;max-height:80px;border-radius:8px;object-fit:cover;"></div><% } %></div>
         <div class="admin-field"><label>Акцент</label><select name="is_accent"><option value="0"<%= step.is_accent ? '' : ' selected' %>>Нет</option><option value="1"<%= step.is_accent ? ' selected' : '' %>>Да</option></select></div>
       </div>
       <div class="admin-item__actions">
@@ -175,8 +175,7 @@
         <div class="admin-field"><label>Должность (бейдж)</label><input type="text" name="badge" value="<%= m.badge %>"></div>
       </div>
       <div class="admin-field"><label>Роль</label><input type="text" name="role" value="<%= m.role %>"></div>
-      <div class="admin-field"><label>Фото</label><input type="text" name="photo_path" value="<%= m.photo_path %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁</button></div>
-      <% if (m.photo_path) { %><img src="/<%= m.photo_path %>" class="admin-preview" alt=""><% } %>
+      <div class="admin-field"><label>Фото</label><input type="hidden" name="photo_path" value="<%= m.photo_path %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁 Загрузить</button><% if (m.photo_path) { %><div class="upload-preview" style="margin-top:8px"><img src="/<%= m.photo_path %>" style="max-width:180px;max-height:140px;border-radius:8px;object-fit:cover;"></div><% } %></div>
       <div class="admin-item__actions">
         <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить</button>
         <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">Удалить</button>
@@ -194,8 +193,7 @@
   <div class="admin-items" data-table="certificates">
     <% if(items.certificates) items.certificates.forEach(function(cert) { %>
     <div class="admin-item" data-id="<%= cert.id %>">
-      <div class="admin-field"><label>Изображение</label><input type="text" name="image_path" value="<%= cert.image_path %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁</button></div>
-      <img src="/<%= cert.image_path %>" class="admin-preview" alt="">
+      <div class="admin-field"><label>Изображение</label><input type="hidden" name="image_path" value="<%= cert.image_path %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁 Загрузить</button><% if (cert.image_path) { %><div class="upload-preview" style="margin-top:8px"><img src="/<%= cert.image_path %>" style="max-width:200px;max-height:160px;border-radius:8px;object-fit:cover;"></div><% } %></div>
       <div class="admin-item__actions">
         <button class="admin-btn admin-btn--sm" onclick="saveItem(this)">Сохранить</button>
         <button class="admin-btn admin-btn--sm admin-btn--danger" onclick="deleteItem(this)">Удалить</button>
@@ -276,7 +274,7 @@
     <div class="admin-item" data-id="<%= c.id %>">
       <div class="admin-field-row">
         <div class="admin-field"><label>Тип лого</label><select name="logo_type"><option value="image"<%= c.logo_type==='image'?' selected':'' %>>Картинка</option><option value="text"<%= c.logo_type==='text'?' selected':'' %>>Текст</option></select></div>
-        <div class="admin-field"><label>Лого (путь)</label><input type="text" name="logo_path" value="<%= c.logo_path || '' %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁</button></div>
+        <div class="admin-field"><label>Лого</label><input type="hidden" name="logo_path" value="<%= c.logo_path || '' %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁 Загрузить</button><% if (c.logo_path) { %><div class="upload-preview" style="margin-top:8px"><img src="/<%= c.logo_path %>" style="max-width:120px;max-height:80px;border-radius:8px;object-fit:cover;"></div><% } %></div>
         <div class="admin-field"><label>Лого (текст)</label><input type="text" name="logo_text" value="<%= c.logo_text || '' %>"></div>
       </div>
       <div class="admin-field-row">
@@ -316,7 +314,7 @@
       <div class="admin-field"><label>Текст отзыва</label><textarea name="text" rows="3"><%= r.text || '' %></textarea></div>
       <div class="admin-field-row">
         <div class="admin-field"><label>Видео URL (YouTube/Rutube)</label><input type="text" name="video_url" value="<%= r.video_url || '' %>"></div>
-        <div class="admin-field"><label>Видео файл</label><input type="text" name="video_path" value="<%= r.video_path || '' %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁</button></div>
+        <div class="admin-field"><label>Видео файл</label><input type="hidden" name="video_path" value="<%= r.video_path || '' %>"><button class="admin-btn admin-btn--sm" onclick="uploadForField(this)">📁 Загрузить</button><% if (r.video_path) { %><div class="upload-preview" style="margin-top:8px"><video src="/<%= r.video_path %>" controls style="max-width:280px;max-height:180px;border-radius:8px;"></video></div><% } %></div>
       </div>
       <div class="admin-field"><label>Ссылка на оригинал</label><input type="text" name="link" value="<%= r.link || '' %>"></div>
       <div class="admin-item__actions">
