@@ -265,7 +265,7 @@ router.put('/items/:table/reorder', (req, res) => {
 router.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   const isVideo = req.file.mimetype.startsWith('video/');
-  const relativePath = '/uploads/' + (isVideo ? 'videos/' : 'images/') + req.file.filename;
+  const relativePath = 'uploads/' + (isVideo ? 'videos/' : 'images/') + req.file.filename;
   res.json({ ok: true, path: relativePath, filename: req.file.filename });
 });
 

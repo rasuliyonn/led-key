@@ -114,7 +114,7 @@
     });
   })();
 
-  // Upload file and set field value
+  // Upload file and set field value + show preview
   window.uploadForField = function(btn) {
     var input = btn.previousElementSibling;
     if (!input) return;
@@ -132,6 +132,19 @@
           if (data.ok) {
             input.value = data.path;
             showToast('Файл загружен');
+            // Show preview after upload
+            var existing = btn.parentElement.querySelector('.upload-preview');
+            if (existing) existing.remove();
+            var preview = document.createElement('div');
+            preview.className = 'upload-preview';
+            preview.style.cssText = 'margin-top:8px;';
+            var src = '/' + data.path;
+            if (file.type.startsWith('video/')) {
+              preview.innerHTML = '<video src="' + src + '" controls style="max-width:280px;max-height:180px;border-radius:8px;"></video>';
+            } else {
+              preview.innerHTML = '<img src="' + src + '" style="max-width:280px;max-height:180px;border-radius:8px;object-fit:cover;">';
+            }
+            btn.parentElement.appendChild(preview);
           }
         });
     };
