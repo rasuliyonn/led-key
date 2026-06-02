@@ -8,9 +8,16 @@ const { requireAuthApi } = require('../middleware/auth');
 const db = require('../models/db');
 
 // --- MAX Messenger notification ---
+function getGlobalValue(key) {
+  try {
+    const row = db.getDb().prepare('SELECT value FROM globals WHERE key = ?').get(key);
+    return row && row.value ? row.value : '';
+  } catch (e) { return ''; }
+}
+
 function notifyMax(lead) {
-  const token = process.env.MAX_BOT_TOKEN;
-  const chatId = process.env.MAX_CHAT_ID;
+  const token = getGlobalValue('max_bot_token') || process.env.MAX_BOT_TOKEN;
+  const chatId = getGlobalValue('max_chat_id') || process.env.MAX_CHAT_ID;
   if (!token || !chatId) return;
 
   const text = [

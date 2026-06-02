@@ -16,7 +16,7 @@
 <header class="header" id="top">
   <div class="container header__inner">
     <a href="#top" class="logo" aria-label="Lead Key — на главную">
-      <img src="/<%= g.logo_path %>" alt="Avito Lead Key" class="logo__img">
+      <img src="/<%= g.logo_path %>" alt="Lead Key" class="logo__img">
     </a>
     <nav class="nav" id="nav">
       <% navHeader.forEach(function(link) { %>
@@ -44,8 +44,8 @@
           <%= s.hero.extra.cta_text || 'Смотреть кейсы' %> <span class="btn__arrow" aria-hidden="true">↗</span>
         </a>
         <div class="hero__socials">
-          <a href="<%= g.avito_url %>" class="social-btn" target="_blank" rel="noopener" aria-label="Avito">
-            <img src="/assets/logo-avito.svg" alt="">
+          <a href="<%= g.max_bot_url || '#' %>" class="social-btn social-btn--max" target="_blank" rel="noopener" aria-label="MAX Messenger">
+            <svg viewBox="0 0 50 50" width="30" height="30" fill="none" aria-hidden="true"><rect x="0.5" y="0.5" width="49" height="49" rx="9.5" stroke="url(#maxG1)"/><path fill-rule="evenodd" clip-rule="evenodd" d="M24.8116 39.9172C21.9656 39.9172 20.643 39.5 18.3441 37.8309C16.8899 39.7086 12.2851 41.176 12.0843 38.6654C12.0843 36.7807 11.6688 35.1881 11.1979 33.4495C10.6371 31.3074 10 28.922 10 25.4656C10 17.2105 16.7445 11 24.7354 11C32.7332 11 38.9999 17.5165 38.9999 25.5421C39.0268 33.4436 32.6788 39.8751 24.8116 39.9172ZM24.9293 18.1354C21.0377 17.9337 18.0048 20.6391 17.3331 24.8814C16.7791 28.3935 17.7624 32.6705 18.6003 32.8931C19.0019 32.9905 20.0129 32.1698 20.643 31.5369C21.6675 33.4495 23.6669 34.5633 24.9293 34.6649C28.9616 34.8597 31.6384 29.9074 31.9092 25.862C32.0668 21.808 28.9622 18.3744 24.9293 18.1424V18.1354Z" fill="url(#maxG2)"/><defs><linearGradient id="maxG1" x1="25" y1="0" x2="25" y2="50" gradientUnits="userSpaceOnUse"><stop stop-color="#902EBB"/><stop offset="1" stop-color="#1FA4EF"/></linearGradient><linearGradient id="maxG2" x1="35.6538" y1="25.1282" x2="12.9744" y2="38.5128" gradientUnits="userSpaceOnUse"><stop stop-color="#902EBB"/><stop offset="1" stop-color="#15AEF3"/></linearGradient></defs></svg>
           </a>
           <a href="<%= g.telegram_url %>" class="social-btn social-btn--tg" target="_blank" rel="noopener" aria-label="Telegram">
             <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="#2AABEE" d="M12 0a12 12 0 100 24 12 12 0 000-24z"/><path fill="#fff" d="M5.5 11.8l11-4.24c.51-.18.96.12.79.9l-1.87 8.83c-.14.65-.53.81-1.07.5l-2.96-2.18-1.43 1.38c-.16.16-.29.29-.59.29l.21-2.99 5.45-4.92c.24-.21-.05-.33-.37-.12l-6.73 4.24-2.9-.9c-.63-.2-.64-.63.13-.93z"/></svg>
@@ -170,7 +170,7 @@
         <div class="lead-form__row">
           <input type="text" name="name" class="lead-form__input" placeholder="Имя" required>
           <input type="tel" name="phone" class="lead-form__input lead-form__input--phone" placeholder="+7 (000) 000-00-00" required>
-          <input type="text" name="link" class="lead-form__input" placeholder="Ссылка на Авито аккаунт">
+          <input type="text" name="link" class="lead-form__input" placeholder="Ссылка на аккаунт MAX">
           <button type="submit" class="btn btn--light lead-form__submit"><%= s.cta1.extra.button_text || 'Записаться' %></button>
         </div>
         <label class="lead-form__check">
@@ -317,7 +317,7 @@
         <div class="lead-form__row">
           <input type="text" name="name" class="lead-form__input" placeholder="Имя" required>
           <input type="tel" name="phone" class="lead-form__input lead-form__input--phone" placeholder="+7 (000) 000-00-00" required>
-          <input type="text" name="link" class="lead-form__input" placeholder="Ссылка на Авито аккаунт">
+          <input type="text" name="link" class="lead-form__input" placeholder="Ссылка на аккаунт MAX">
           <button type="submit" class="btn btn--light lead-form__submit"><%= s.cta2.extra.button_text || 'Записаться' %></button>
         </div>
         <label class="lead-form__check">
@@ -397,7 +397,7 @@
           <input type="hidden" name="form_source" value="final_cta">
           <input type="text" name="name" class="lead-form__input" placeholder="Ваше имя" required>
           <input type="tel" name="phone" class="lead-form__input lead-form__input--phone" placeholder="+7 (000) 000-00-00" required>
-          <input type="text" name="link" class="lead-form__input" placeholder="Ссылка на Авито аккаунт">
+          <input type="text" name="link" class="lead-form__input" placeholder="Ссылка на аккаунт MAX">
           <label class="lead-form__check">
             <input type="checkbox" name="agree_pd" required>
             <span>Я согласен(-на) на обработку моих <a href="https://lead-key.ru/approval2" target="_blank" rel="noopener">персональных данных</a> в соответствии с <a href="https://lead-key.ru/politics" target="_blank" rel="noopener">Политикой</a> по обработке и защиты персональных данных</span>
@@ -419,7 +419,7 @@
 <footer class="site-footer">
   <div class="container site-footer__inner">
     <div class="site-footer__col site-footer__col--brand">
-      <a href="#top" class="logo"><img src="/<%= g.logo_path %>" alt="Avito Lead Key" class="logo__img"></a>
+      <a href="#top" class="logo"><img src="/<%= g.logo_path %>" alt="Lead Key" class="logo__img"></a>
       <p class="site-footer__legal">ИНН <%= g.inn %><br>КПП <%= g.kpp %></p>
     </div>
     <nav class="site-footer__col site-footer__nav">
@@ -433,7 +433,9 @@
     </div>
     <div class="site-footer__col site-footer__socials">
       <div class="site-footer__social-row">
-        <a href="<%= g.avito_url %>" class="social-btn" target="_blank" rel="noopener" aria-label="Avito"><img src="/assets/logo-avito.svg" alt=""></a>
+        <a href="<%= g.max_bot_url || '#' %>" class="social-btn social-btn--max" target="_blank" rel="noopener" aria-label="MAX Messenger">
+          <svg viewBox="0 0 50 50" width="30" height="30" fill="none" aria-hidden="true"><rect x="0.5" y="0.5" width="49" height="49" rx="9.5" stroke="url(#maxG1)"/><path fill-rule="evenodd" clip-rule="evenodd" d="M24.8116 39.9172C21.9656 39.9172 20.643 39.5 18.3441 37.8309C16.8899 39.7086 12.2851 41.176 12.0843 38.6654C12.0843 36.7807 11.6688 35.1881 11.1979 33.4495C10.6371 31.3074 10 28.922 10 25.4656C10 17.2105 16.7445 11 24.7354 11C32.7332 11 38.9999 17.5165 38.9999 25.5421C39.0268 33.4436 32.6788 39.8751 24.8116 39.9172ZM24.9293 18.1354C21.0377 17.9337 18.0048 20.6391 17.3331 24.8814C16.7791 28.3935 17.7624 32.6705 18.6003 32.8931C19.0019 32.9905 20.0129 32.1698 20.643 31.5369C21.6675 33.4495 23.6669 34.5633 24.9293 34.6649C28.9616 34.8597 31.6384 29.9074 31.9092 25.862C32.0668 21.808 28.9622 18.3744 24.9293 18.1424V18.1354Z" fill="url(#maxG2)"/><defs><linearGradient id="maxG1" x1="25" y1="0" x2="25" y2="50" gradientUnits="userSpaceOnUse"><stop stop-color="#902EBB"/><stop offset="1" stop-color="#1FA4EF"/></linearGradient><linearGradient id="maxG2" x1="35.6538" y1="25.1282" x2="12.9744" y2="38.5128" gradientUnits="userSpaceOnUse"><stop stop-color="#902EBB"/><stop offset="1" stop-color="#15AEF3"/></linearGradient></defs></svg>
+        </a>
         <a href="<%= g.telegram_url %>" class="social-btn social-btn--tg" target="_blank" rel="noopener" aria-label="Telegram">
           <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="#2AABEE" d="M12 0a12 12 0 100 24 12 12 0 000-24z"/><path fill="#fff" d="M5.5 11.8l11-4.24c.51-.18.96.12.79.9l-1.87 8.83c-.14.65-.53.81-1.07.5l-2.96-2.18-1.43 1.38c-.16.16-.29.29-.59.29l.21-2.99 5.45-4.92c.24-.21-.05-.33-.37-.12l-6.73 4.24-2.9-.9c-.63-.2-.64-.63.13-.93z"/></svg>
         </a>
@@ -454,13 +456,7 @@
 <% if (g.max_bot_url) { %>
 <!-- MAX Messenger чат-кнопка -->
 <a href="<%= g.max_bot_url %>" class="max-chat-btn" target="_blank" rel="noopener" aria-label="Написать в MAX" title="Написать нам в MAX">
-  <svg viewBox="0 0 40 40" width="28" height="28" fill="none" aria-hidden="true">
-    <rect width="40" height="40" rx="10" fill="#fff"/>
-    <path d="M10 13a3 3 0 013-3h14a3 3 0 013 3v10a3 3 0 01-3 3h-5l-4 4v-4h-5a3 3 0 01-3-3V13z" fill="#5B2EBF"/>
-    <circle cx="16" cy="18" r="1.5" fill="#fff"/>
-    <circle cx="20" cy="18" r="1.5" fill="#fff"/>
-    <circle cx="24" cy="18" r="1.5" fill="#fff"/>
-  </svg>
+  <svg viewBox="0 0 50 50" width="28" height="28" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M24.8116 39.9172C21.9656 39.9172 20.643 39.5 18.3441 37.8309C16.8899 39.7086 12.2851 41.176 12.0843 38.6654C12.0843 36.7807 11.6688 35.1881 11.1979 33.4495C10.6371 31.3074 10 28.922 10 25.4656C10 17.2105 16.7445 11 24.7354 11C32.7332 11 38.9999 17.5165 38.9999 25.5421C39.0268 33.4436 32.6788 39.8751 24.8116 39.9172ZM24.9293 18.1354C21.0377 17.9337 18.0048 20.6391 17.3331 24.8814C16.7791 28.3935 17.7624 32.6705 18.6003 32.8931C19.0019 32.9905 20.0129 32.1698 20.643 31.5369C21.6675 33.4495 23.6669 34.5633 24.9293 34.6649C28.9616 34.8597 31.6384 29.9074 31.9092 25.862C32.0668 21.808 28.9622 18.3744 24.9293 18.1424V18.1354Z" fill="#fff"/></svg>
 </a>
 <% } %>
 
