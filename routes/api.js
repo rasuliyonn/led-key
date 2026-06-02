@@ -307,4 +307,28 @@ router.delete('/leads/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// Pages CRUD
+router.get('/pages', (req, res) => {
+  const pages = db.getDb().prepare('SELECT * FROM pages').all();
+  res.json(pages);
+});
+
+router.post('/pages', (req, res) => {
+  const { slug, title, content } = req.body;
+  if (!slug || !title) return res.status(400).json({ error: 'Slug and title required' });
+  db.getDb().prepare('INSERT INTO pages (slug, title, content) VALUES (?, ?, ?)').run(slug, title, content || '');
+  res.json({ ok: true });
+});
+
+router.put('/pages/:slug', (req, res) => {
+  const { title, content } = req.body;
+  db.getDb().prepare('UPDATE pages SET title = ?, content = ? WHERE slug = ?').run(title, content || '', req.params.slug);
+  res.json({ ok: true });
+});
+
+router.delete('/pages/:slug', (req, res) => {
+  db.getDb().prepare('DELETE FROM pages WHERE slug = ?').run(req.params.slug);
+  res.json({ ok: true });
+});
+
 module.exports = router;

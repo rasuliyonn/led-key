@@ -112,6 +112,12 @@ router.get('/section/:id', (req, res) => {
   });
 });
 
+// Pages
+router.get('/pages', (req, res) => {
+  const pages = db.getDb().prepare('SELECT * FROM pages').all();
+  renderAdmin(res, 'pages', { page: 'pages', admin: req.admin, pages });
+});
+
 // Media library
 router.get('/media', (req, res) => {
   const fs = require('fs');

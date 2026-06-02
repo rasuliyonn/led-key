@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= page.title %> — Lead Key</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .page-wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+    .page-wrap h1 { font-size: clamp(28px, 4vw, 42px); font-weight: 700; margin-bottom: 32px; color: var(--ink); }
+    .page-wrap h2 { font-size: clamp(20px, 2.5vw, 26px); font-weight: 600; margin-top: 36px; margin-bottom: 14px; color: var(--ink); }
+    .page-wrap p { font-size: 16px; line-height: 1.65; color: var(--muted); margin-bottom: 16px; }
+    .page-wrap ul { padding-left: 24px; margin-bottom: 16px; }
+    .page-wrap li { font-size: 16px; line-height: 1.65; color: var(--muted); margin-bottom: 8px; }
+    .page-back { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--purple); text-decoration: none; margin-bottom: 32px; font-weight: 500; }
+    .page-back:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container header__inner">
+    <a href="/" class="logo" aria-label="Lead Key — на главную">
+      <img src="/<%= g.logo_path %>" alt="Lead Key" class="logo__img">
+    </a>
+    <div class="header__actions">
+      <a href="tel:<%= g.phone_raw %>" class="header__phone"><%= g.phone %></a>
+      <a href="/" class="btn btn--primary header__btn">На главную</a>
+    </div>
+  </div>
+</header>
+
+<main class="page-wrap">
+  <a href="/" class="page-back">&larr; На главную</a>
+  <h1><%= page.title %></h1>
+  <%- page.content %>
+</main>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

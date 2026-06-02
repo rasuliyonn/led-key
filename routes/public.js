@@ -11,4 +11,12 @@ router.get('/', (req, res) => {
   res.render('index', data);
 });
 
+// Static pages (politics, offer, etc.)
+router.get('/:slug', (req, res, next) => {
+  const page = db.getDb().prepare('SELECT * FROM pages WHERE slug = ?').get(req.params.slug);
+  if (!page) return next();
+  const g = db.getGlobals();
+  res.render('page', { page, g });
+});
+
 module.exports = router;

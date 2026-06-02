@@ -1,0 +1,56 @@
+<h1 class="admin-page-title">Страницы</h1>
+
+<% pages.forEach(function(p) { %>
+<div class="admin-card" style="margin-bottom: 24px; padding: 24px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06);">
+  <form class="admin-form" onsubmit="savePage(event, '<%= p.slug %>')">
+    <div class="admin-field">
+      <label>Slug (URL)</label>
+      <input type="text" value="/<%= p.slug %>" disabled style="opacity:.6">
+    </div>
+    <div class="admin-field">
+      <label>Заголовок</label>
+      <input type="text" name="title" value="<%= p.title %>">
+    </div>
+    <div class="admin-field">
+      <label>Контент (HTML)</label>
+      <textarea name="content" rows="16" style="font-family:monospace;font-size:13px;"><%= p.content %></textarea>
+    </div>
+    <button type="submit" class="admin-btn">Сохранить</button>
+    <a href="/<%= p.slug %>" target="_blank" class="admin-btn admin-btn--sm" style="margin-left:12px;">Посмотреть</a>
+  </form>
+</div>
+<% }); %>
+
+<h2 style="margin-top:32px;">Добавить страницу</h2>
+<form class="admin-form" onsubmit="addPage(event)" style="padding:24px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+  <div class="admin-field">
+    <label>Slug (URL без /)</label>
+    <input type="text" name="slug" placeholder="offer" required>
+  </div>
+  <div class="admin-field">
+    <label>Заголовок</label>
+    <input type="text" name="title" placeholder="Публичная оферта" required>
+  </div>
+  <div class="admin-field">
+    <label>Контент (HTML)</label>
+    <textarea name="content" rows="10" style="font-family:monospace;font-size:13px;"></textarea>
+  </div>
+  <button type="submit" class="admin-btn">Создать</button>
+</form>
+
+<script>
+function savePage(e, slug) {
+  e.preventDefault();
+  var form = e.target;
+  var data = { title: form.title.value, content: form.content.value };
+  fetch('/api/pages/' + slug, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
+    .then(r => r.json()).then(() => showToast('Сохранено'));
+}
+function addPage(e) {
+  e.preventDefault();
+  var form = e.target;
+  var data = { slug: form.slug.value, title: form.title.value, content: form.content.value };
+  fetch('/api/pages', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
+    .then(r => r.json()).then(() => { showToast('Создано'); location.reload(); });
+}
+</script>

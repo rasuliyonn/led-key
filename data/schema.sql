@@ -155,6 +155,12 @@ CREATE TABLE IF NOT EXISTS legal_links (
     sort_order  INTEGER NOT NULL DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS pages (
+    slug        TEXT PRIMARY KEY,
+    title       TEXT NOT NULL,
+    content     TEXT NOT NULL DEFAULT ''
+);
+
 CREATE TABLE IF NOT EXISTS leads (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT,
