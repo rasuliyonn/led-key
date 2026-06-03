@@ -771,7 +771,10 @@ body {
    АДАПТИВ
    ========================================================= */
 @media (max-width: 1199px) {
-  .hero__inner { grid-template-columns: 1fr; gap: 30px; }
+  .hero__inner { grid-template-columns: 1fr; gap: 30px; text-align: center; }
+  .hero__content { display: flex; flex-direction: column; align-items: center; }
+  .hero__cta { padding-left: 0; width: 100%; max-width: 380px; justify-content: center; }
+  .hero__socials { justify-content: center; }
   .hero__media { max-width: 520px; margin-inline: auto; }
   .hero__photo-wrap { padding: 16px; }
   .process__grid { grid-template-columns: repeat(2, 1fr); }
