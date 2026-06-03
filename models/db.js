@@ -33,10 +33,33 @@ function init() {
   // Migrations: ensure new globals exist
   const ensureGlobal = db.prepare('INSERT OR IGNORE INTO globals (key, value, label, field_type) VALUES (?, ?, ?, ?)');
   ensureGlobal.run('max_bot_url', '', 'Ссылка на бота MAX (для виджета чата)', 'url');
+  ensureGlobal.run('max_bot_token', '', 'MAX Bot Token (для уведомлений о заявках)', 'text');
+  ensureGlobal.run('max_chat_id', '', 'MAX Chat ID (куда слать уведомления)', 'text');
 
   // Migrate file-type globals
   const setFileType = db.prepare("UPDATE globals SET field_type = 'file' WHERE key = ? AND field_type != 'file'");
   ['logo_path', 'hero_photo', 'footer_bg'].forEach(k => setFileType.run(k));
+
+  // Migrate: create pages table if not exists
+  db.exec('CREATE TABLE IF NOT EXISTS pages (slug TEXT PRIMARY KEY, title TEXT NOT NULL, content TEXT NOT NULL DEFAULT "")');
+
+  // Seed default pages if empty
+  const pageCount = db.prepare('SELECT COUNT(*) as cnt FROM pages').get().cnt;
+  if (pageCount === 0) {
+    const seedPage = db.prepare('INSERT OR IGNORE INTO pages (slug, title, content) VALUES (?, ?, ?)');
+    seedPage.run('politics', 'Политика конфиденциальности', '<h2>1. Общие положения</h2><p>Настоящая Политика конфиденциальности определяет порядок обработки и защиты персональных данных пользователей сайта. Оставляя свои персональные данные, Пользователь даёт согласие на их обработку в соответствии с ФЗ № 152-ФЗ «О персональных данных».</p><h2>2. Какие данные мы собираем</h2><ul><li>Имя;</li><li>Номер телефона;</li><li>Адрес электронной почты;</li><li>Ссылки на профили в мессенджерах.</li></ul><h2>3. Цели обработки</h2><ul><li>Связь с Пользователем;</li><li>Исполнение договорных обязательств;</li><li>Направление рассылок (при наличии согласия).</li></ul><h2>4. Защита данных</h2><p>Оператор принимает необходимые меры для защиты персональных данных от неправомерного доступа.</p><h2>5. Контакты</h2><p>По вопросам обработки персональных данных обращайтесь на email или по телефону, указанным на сайте.</p>');
+    seedPage.run('offer', 'Публичная оферта', '<h2>1. Общие положения</h2><p>Настоящий документ является публичной офертой и содержит условия оказания услуг по продвижению бизнеса на маркетплейсах.</p><h2>2. Предмет</h2><p>Исполнитель обязуется оказать услуги в соответствии с выбранным тарифным планом.</p><h2>3. Оплата</h2><p>Стоимость определяется тарифным планом. Оплата — 100% предоплата.</p><h2>4. Контакты</h2><p>Контактная информация указана на сайте.</p>');
+    seedPage.run('approval', 'Согласие на информационную рассылку', '<h2>Согласие на рассылку</h2><p>Оставляя контактные данные, я даю согласие на направление мне информационных и рекламных сообщений посредством SMS, мессенджеров, электронной почты и телефонных звонков.</p><p>Я вправе отказаться от рассылки в любой момент, направив запрос на email, указанный на сайте.</p>');
+    seedPage.run('approval2', 'Согласие на обработку персональных данных', '<h2>Согласие на обработку ПД</h2><p>Я даю согласие на обработку моих персональных данных (ФИО, телефон, email, ссылки на профили) в целях консультирования, оказания услуг и направления рассылок. Согласие действует до момента отзыва.</p>');
+    console.log('Default pages seeded');
+  }
+
+  // Migrate legal_links to local URLs
+  const updateLegal = db.prepare("UPDATE legal_links SET url = ? WHERE url LIKE ?");
+  updateLegal.run('/politics', '%lead-key.ru/politics');
+  updateLegal.run('/offer', '%lead-key.ru/offer');
+  updateLegal.run('/approval2', '%lead-key.ru/approval2');
+  updateLegal.run('/approval', '%lead-key.ru/approval');
 
   return db;
 }
